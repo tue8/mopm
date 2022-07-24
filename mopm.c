@@ -298,23 +298,26 @@ static int find_package(CURL *curl_handle, const char* input_pkg_name, const cha
 
 int main(int argc, char *argv[])
 {
+	char argv_n[134];
 	CURL *curl_handle;
 
 	char *appdata = getenv("APPDATA");
+
 	char mopm_dir[STRING_MAX_LEN];
 	char bin_dir[STRING_MAX_LEN];
 	char vctrl_dir[STRING_MAX_LEN];
 	char vctrl_dir_clone[STRING_MAX_LEN];
 	char pkg_download_dir[STRING_MAX_LEN];
+
 	char *input_pkg_name;
 	char *input_pkg_version;
 
 	toml_pkg toml_pkg_vars;
+
 	FILE *vctrl_file;
 	int vctrl_file_size;
 	FILE *vctrl_file_clone;
-
-	char argv_n[134];
+	DWORD vctrl_file_clone_attr;
 	char vctrl_line[133];
 
 	curl_global_init(CURL_GLOBAL_ALL);
@@ -377,6 +380,11 @@ int main(int argc, char *argv[])
 
 	vctrl_file = fopen(vctrl_dir, "r");
 	vctrl_file_clone = fopen(vctrl_dir_clone, "w");
+
+	vctrl_file_clone_attr = GetFileAttributes(vctrl_dir_clone);
+	if ((vctrl_file_clone_attr & FILE_ATTRIBUTE_HIDDEN) == 0) {
+		SetFileAttributes(vctrl_dir_clone, vctrl_file_clone_attr | FILE_ATTRIBUTE_HIDDEN);
+	}
 
 	snprintf(argv_n, sizeof(argv_n), "%s\n", argv[2]);
 
@@ -538,6 +546,8 @@ exit_vctrl:
 	{
 		perror("Could not rename .vctrl.clone");
 	}
+
+	SetFileAttributes(vctrl_dir, vctrl_file_clone_attr);
 
 	goto exit;
 exit:
