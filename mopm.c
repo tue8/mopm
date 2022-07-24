@@ -306,7 +306,6 @@ int main(int argc, char *argv[])
 	char vctrl_dir[STRING_MAX_LEN];
 	char vctrl_dir_clone[STRING_MAX_LEN];
 	char pkg_download_dir[STRING_MAX_LEN];
-
 	char *input_pkg_name;
 	char *input_pkg_version;
 
@@ -317,9 +316,6 @@ int main(int argc, char *argv[])
 
 	char argv_n[134];
 	char vctrl_line[133];
-
-	int find_package_res = 0;
-	char find_package_err_buffer[STRING_MAX_LEN];
 
 	curl_global_init(CURL_GLOBAL_ALL);
 	curl_handle = curl_easy_init();
@@ -386,6 +382,8 @@ int main(int argc, char *argv[])
 
 	if (strcmp(argv[1], "install") == 0)
 	{
+		int find_package_res = 0;
+		char find_package_err_buffer[STRING_MAX_LEN];
 		CURLcode pkg_download_res;
 
 		int vctrl_argv_position = 0;
@@ -463,6 +461,8 @@ int main(int argc, char *argv[])
 	}
 	else if (strcmp(argv[1], "uninstall") == 0)
 	{
+		int find_package_res = 0;
+		char find_package_err_buffer[STRING_MAX_LEN];
 		FILE *pkg_binary;
 
 		find_package_res = find_package(curl_handle, input_pkg_name, input_pkg_version, vctrl_dir, 
@@ -510,6 +510,7 @@ int main(int argc, char *argv[])
 			goto exit_no_vctrl;
 		}
 
+	uninstall_success:
 		printf("Successfully uninstalled package\n");
 		goto exit_vctrl;
 	}
@@ -517,10 +518,12 @@ int main(int argc, char *argv[])
 exit_no_vctrl:
 	fclose(vctrl_file);
 	fclose(vctrl_file_clone);
+
 	if (remove(vctrl_dir_clone) != 0)
 	{
 		perror("Could not remove .vctrl.clone");
 	}
+
 	goto exit;
 exit_vctrl:
 	fclose(vctrl_file);
@@ -535,15 +538,17 @@ exit_vctrl:
 	{
 		perror("Could not rename .vctrl.clone");
 	}
-exit:
-	free(toml_pkg_vars.author.u.s);
-	free(toml_pkg_vars.description.u.s);
-	free(toml_pkg_vars.binary_url.u.s);
-	free(toml_pkg_vars.checksum.u.s);
-	free(toml_pkg_vars.license.u.s);
 
-	free(input_pkg_name);
-	free(input_pkg_version);
+	goto exit;
+exit:
+	if (toml_pkg_vars.author.u.s != NULL) free(toml_pkg_vars.author.u.s);
+	if (toml_pkg_vars.description.u.s != NULL) free(toml_pkg_vars.description.u.s);
+	if (toml_pkg_vars.binary_url.u.s != NULL) free(toml_pkg_vars.binary_url.u.s);
+	if (toml_pkg_vars.checksum.u.s != NULL) free(toml_pkg_vars.checksum.u.s);
+	if (toml_pkg_vars.license.u.s != NULL) free(toml_pkg_vars.license.u.s);
+
+	if (input_pkg_name != NULL) free(input_pkg_name);
+	if (input_pkg_version != NULL) free(input_pkg_version);
 
 	curl_easy_cleanup(curl_handle);
 	curl_global_cleanup();
