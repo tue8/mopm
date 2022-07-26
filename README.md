@@ -5,9 +5,8 @@
 </div>
 <br>
 
-### Usage:
 ```
-mopm [un]install [package name]@[package_version]
+mopm --help
 ```
 
 ### Libraries:
