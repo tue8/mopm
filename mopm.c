@@ -577,6 +577,10 @@ int main(int argc, char *argv[])
 		if (input_pkg_name != NULL) free(input_pkg_name);
 		if (input_pkg_version != NULL) free(input_pkg_version);
 	}
+	else
+	{
+		printf("Invalid command, see 'mopm --help'\n");
+	}
 exit_all:
 	curl_easy_cleanup(curl_handle);
 	curl_global_cleanup();
