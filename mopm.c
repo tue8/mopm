@@ -7,6 +7,7 @@
 #include <sha256.h>
 #include <toml.h>
 
+#define MOPM_VERSION "0.1.0.1"
 #define STRING_MAX_LEN 255
 
 typedef struct
@@ -197,6 +198,7 @@ static char *get_checksum_sha256(const char *filename)
 
 	*(hex_sha256sum + 65) = '\0';
 
+	fclose(f);
 	return hex_sha256sum;
 }
 
@@ -298,27 +300,18 @@ static int find_package(CURL *curl_handle, const char* input_pkg_name, const cha
 
 int main(int argc, char *argv[])
 {
-	char argv_n[134];
 	CURL *curl_handle;
 
 	char *appdata = getenv("APPDATA");
 
 	char mopm_dir[STRING_MAX_LEN];
 	char bin_dir[STRING_MAX_LEN];
-	char vctrl_dir[STRING_MAX_LEN];
-	char vctrl_dir_clone[STRING_MAX_LEN];
-	char pkg_download_dir[STRING_MAX_LEN];
 
-	char *input_pkg_name;
-	char *input_pkg_version;
-
-	toml_pkg toml_pkg_vars;
-
-	FILE *vctrl_file;
-	int vctrl_file_size;
-	FILE *vctrl_file_clone;
-	DWORD vctrl_file_clone_attr;
-	char vctrl_line[133];
+	if (argc < 2)
+	{
+		printf("Too few arguments provided\n");
+		goto exit;
+	}
 
 	curl_global_init(CURL_GLOBAL_ALL);
 	curl_handle = curl_easy_init();
@@ -326,19 +319,13 @@ int main(int argc, char *argv[])
 	if (curl_handle == NULL)
 	{
 		printf("Could not initialize curl\n");
-		goto exit;
-	}
-
-	if (argc != 3)
-	{
-		printf("Too few arguments provided\n");
-		goto exit;
+		goto exit_all;
 	}
 
 	if (appdata == NULL)
 	{
 		printf("Could not find %%APPDATA%\n");
-		goto exit;
+		goto exit_all;
 	}
 
 	snprintf(mopm_dir, sizeof(mopm_dir), "%s\\mopm", appdata);
@@ -346,7 +333,7 @@ int main(int argc, char *argv[])
 	if (CreateDirectory(mopm_dir, NULL) == 0 && GetLastError() != ERROR_ALREADY_EXISTS)
 	{
 		printf("Could not create mopm folder\n");
-		goto exit;
+		goto exit_all;
 	}
 
 	snprintf(bin_dir, sizeof(bin_dir), "%s\\bin", mopm_dir);
@@ -354,212 +341,243 @@ int main(int argc, char *argv[])
 	if (CreateDirectory(bin_dir, NULL) == 0 && GetLastError() != ERROR_ALREADY_EXISTS)
 	{
 		printf("Could not create packages folder\n");
-		goto exit;
+		goto exit_all;
 	}
 
-	input_pkg_name = get_str_before_char(argv[2], '@');
-	input_pkg_version = get_str_after_char(argv[2], '@');
-
-	if (strlen(input_pkg_name) > 100)
+	if (strcmp(argv[1], "--help") == 0)
 	{
-		printf("Invalid package name");
-		goto exit;
+		printf("mopm Package Manager Version %s\n"
+			   "A package manager for Windows that installs cli apps onto your pc\n"
+			   "\nUsage: mopm <command> <argument>\n"
+			   "\nAvailable commands: --help\n"
+			   "                    install\n"
+			   "                    uninstall\n",
+			   MOPM_VERSION);
 	}
-
-	if (strlen(input_pkg_version) > 32)
+	else if (strcmp(argv[1], "install") == 0 ||
+			 strcmp(argv[1], "uninstall") == 0)
 	{
-		printf("Invalid package version");
-		goto exit;
-	}
+		char vctrl_dir[STRING_MAX_LEN];
+		char vctrl_dir_clone[STRING_MAX_LEN];
+		char pkg_download_dir[STRING_MAX_LEN];
 
-	snprintf(pkg_download_dir, sizeof(pkg_download_dir), "%s\\%s_v%s.exe", bin_dir, input_pkg_name, input_pkg_version);
-	snprintf(vctrl_dir, sizeof(vctrl_dir), "%s\\.vctrl", mopm_dir);
-	strcpy(vctrl_dir_clone, vctrl_dir);
-	vctrl_dir_clone[strlen(vctrl_dir) - strlen(".vctrl")] = '\0';
-	strcat(vctrl_dir_clone, ".vctrl.clone");
+		char *input_pkg_name;
+		char *input_pkg_version;
 
-	vctrl_file = fopen(vctrl_dir, "r");
-	vctrl_file_clone = fopen(vctrl_dir_clone, "w");
+		toml_pkg toml_pkg_vars;
 
-	vctrl_file_clone_attr = GetFileAttributes(vctrl_dir_clone);
-	if ((vctrl_file_clone_attr & FILE_ATTRIBUTE_HIDDEN) == 0) {
-		SetFileAttributes(vctrl_dir_clone, vctrl_file_clone_attr | FILE_ATTRIBUTE_HIDDEN);
-	}
-
-	snprintf(argv_n, sizeof(argv_n), "%s\n", argv[2]);
-
-	if (strcmp(argv[1], "install") == 0)
-	{
 		int find_package_res = 0;
 		char find_package_err_buffer[STRING_MAX_LEN];
-		CURLcode pkg_download_res;
 
-		int vctrl_argv_position = 0;
+		FILE *vctrl_file;
+		int vctrl_file_size;
+		FILE *vctrl_file_clone;
+		DWORD vctrl_file_clone_attr;
+		char vctrl_line[133];
 
-		find_package_res = find_package(curl_handle, input_pkg_name, input_pkg_version, vctrl_dir, 
-										pkg_download_dir, argv[2], &toml_pkg_vars, find_package_err_buffer);
-		
-		if (find_package_res == 1)
+		char argv_n[134];
+
+		if (argc < 3)
 		{
-			printf("Could not find package: %s\n", find_package_err_buffer);
-			goto exit_no_vctrl;
+			printf("Too few arguments provided\n");
+			goto exit;
 		}
-		
-		printf("\nFound: %s Version %s\nDescription: %s\nLicensed under %s license\nAuthor: %s\n", 
-		input_pkg_name, input_pkg_version, toml_pkg_vars.description.u.s, toml_pkg_vars.license.u.s, toml_pkg_vars.author.u.s);
 
-		printf("\nDownloading package file...\n");
+		input_pkg_name = get_str_before_char(argv[2], '@');
+		input_pkg_version = get_str_after_char(argv[2], '@');
 
-		pkg_download_res = send_download_to_file_req(curl_handle, toml_pkg_vars.binary_url.u.s, pkg_download_dir);
-
-		if (pkg_download_res != CURLE_OK)
+		if (strlen(input_pkg_name) > 100)
 		{
-			printf("Could not download package\n");
+			printf("Invalid package name");
+			goto exit;
+		}
+
+		if (strlen(input_pkg_version) > 32)
+		{
+			printf("Invalid package version");
+			goto exit;
+		}
+
+		snprintf(pkg_download_dir, sizeof(pkg_download_dir), "%s\\%s_v%s.exe", bin_dir, input_pkg_name, input_pkg_version);
+		
+		snprintf(vctrl_dir, sizeof(vctrl_dir), "%s\\.vctrl", mopm_dir);
+
+		strcpy(vctrl_dir_clone, vctrl_dir);
+		vctrl_dir_clone[strlen(vctrl_dir) - strlen(".vctrl")] = '\0';
+		strcat(vctrl_dir_clone, ".vctrl.clone");
+
+		vctrl_file = fopen(vctrl_dir, "r");
+		vctrl_file_clone = fopen(vctrl_dir_clone, "w");
+
+		vctrl_file_clone_attr = GetFileAttributes(vctrl_dir_clone);
+		if ((vctrl_file_clone_attr & FILE_ATTRIBUTE_HIDDEN) == 0) {
+			SetFileAttributes(vctrl_dir_clone, vctrl_file_clone_attr | FILE_ATTRIBUTE_HIDDEN);
+		}
+
+		snprintf(argv_n, sizeof(argv_n), "%s\n", argv[2]);
+
+		if (strcmp(argv[1], "install") == 0)
+		{	
+			CURLcode pkg_download_res;
+			int vctrl_argv_position = 0;
+
+			find_package_res = find_package(curl_handle, input_pkg_name, input_pkg_version, vctrl_dir, 
+											pkg_download_dir, argv[2], &toml_pkg_vars, find_package_err_buffer);
+			
+			if (find_package_res == 1)
+			{
+				printf("Could not find package: %s\n", find_package_err_buffer);
+				goto exit_failure;
+			}
+			
+			printf("\nFound: %s Version %s\n"
+				   "Description: %s\n"
+				   "Licensed under %s license\n"
+				   "Author: %s\n", 
+			input_pkg_name, input_pkg_version, toml_pkg_vars.description.u.s, 
+			toml_pkg_vars.license.u.s, toml_pkg_vars.author.u.s);
+
+			printf("\nDownloading package file...\n");
+
+			pkg_download_res = send_download_to_file_req(curl_handle, toml_pkg_vars.binary_url.u.s, pkg_download_dir);
+
+			if (pkg_download_res != CURLE_OK)
+			{
+				printf("Could not download package\n");
+
+				if (remove(pkg_download_dir) != 0)
+				{
+					perror("Could not remove package binary");
+				}
+
+				goto exit_failure;
+			}
+
+			printf("Successfully downloaded binary file\n");
+
+			if (vctrl_file_clone == NULL)
+			{
+				perror("Could not to create .vctrl.clone");
+				goto exit_failure;
+			}
+
+			if (vctrl_file == NULL || file_empty(vctrl_file) == 0)
+			{
+				vctrl_file = fopen(vctrl_dir, "w");
+
+				if (vctrl_file == NULL)
+				{
+					perror("Could not to create .vctrl");
+					goto exit_failure;
+				}
+
+				fputs(argv[2], vctrl_file_clone);
+				goto install_success;
+			}
+
+			while (fgets(vctrl_line, sizeof(vctrl_line), vctrl_file))
+			{
+				if (strcmp(vctrl_line, argv_n) == 0)
+				{
+					vctrl_argv_position = 1;
+				}
+				else
+				{
+					fputs(vctrl_line, vctrl_file_clone);
+				}
+			}
+
+			if (vctrl_argv_position == 1)
+			{
+				fprintf(vctrl_file_clone, "\n%s", argv[2]);
+			}
+			
+		install_success:
+			printf("Successfully installed package.\n");
+			goto exit_success;
+		}
+		else if (strcmp(argv[1], "uninstall") == 0)
+		{
+			FILE *pkg_binary;
+
+			find_package_res = find_package(curl_handle, input_pkg_name, input_pkg_version, vctrl_dir, 
+											pkg_download_dir, argv[2], &toml_pkg_vars, find_package_err_buffer);
+			
+			if (find_package_res == 1 && strcmp(find_package_err_buffer, "Package is already installed") != 0)
+			{
+				printf("Could not find package: %s\n", find_package_err_buffer);
+				goto exit_failure;
+			}
+
+			if (vctrl_file == NULL || vctrl_file_clone == NULL)
+			{
+				perror("Could not open .vctrl or .vctrl.clone");
+				goto exit_failure;
+			}
+
+			if (file_empty(vctrl_file) == 0)
+			{
+				printf(".vctrl is empty\n");
+				goto exit_failure;
+			}
+
+			while (fgets(vctrl_line, sizeof(vctrl_line), vctrl_file))
+			{
+				if (strcmp(vctrl_line, argv[2]) != 0 && strcmp(vctrl_line, argv_n) != 0)
+				{
+					fputs(vctrl_line, vctrl_file_clone);
+				}
+			}
 
 			if (remove(pkg_download_dir) != 0)
 			{
-				perror("Could not remove package binary");
+				perror("Could not remove package's binary file");
+				goto exit_failure;
 			}
 
-			goto exit_no_vctrl;
+		uninstall_success:
+			printf("Successfully uninstalled package\n");
+			goto exit_success;
 		}
 
-		printf("Successfully downloaded binary file\n");
+	exit_failure:
+		fclose(vctrl_file);
+		fclose(vctrl_file_clone);
 
-		if (vctrl_file_clone == NULL)
+		if (remove(vctrl_dir_clone) != 0)
 		{
-			perror("Could not to create .vctrl.clone");
-			goto exit_no_vctrl;
+			perror("Could not remove .vctrl.clone");
 		}
 
-		if (vctrl_file == NULL || file_empty(vctrl_file) == 0)
+		goto exit;
+	exit_success:
+		fclose(vctrl_file);
+		fclose(vctrl_file_clone);
+
+		if (remove(vctrl_dir) != 0)
 		{
-			vctrl_file = fopen(vctrl_dir, "w");
-
-			if (vctrl_file == NULL)
-			{
-				perror("Could not to create .vctrl");
-				goto exit_no_vctrl;
-			}
-
-			fputs(argv[2], vctrl_file_clone);
-			goto install_success;
+			perror("Could not remove .vctrl");
 		}
 
-		while (fgets(vctrl_line, sizeof(vctrl_line), vctrl_file))
+		if (rename(vctrl_dir_clone, vctrl_dir) != 0)
 		{
-			if (strcmp(vctrl_line, argv_n) == 0)
-			{
-				vctrl_argv_position = 1;
-			}
-			else
-			{
-				fputs(vctrl_line, vctrl_file_clone);
-			}
+			perror("Could not rename .vctrl.clone");
 		}
 
-		if (vctrl_argv_position == 1)
-		{
-			fprintf(vctrl_file_clone, "\n%s", argv[2]);
-		}
-		
-	install_success:
-		printf("Successfully installed package.\n");
-		goto exit_vctrl;
+		SetFileAttributes(vctrl_dir, vctrl_file_clone_attr);
+
+		goto exit;
+	exit:
+		if (toml_pkg_vars.author.u.s != NULL) free(toml_pkg_vars.author.u.s);
+		if (toml_pkg_vars.description.u.s != NULL) free(toml_pkg_vars.description.u.s);
+		if (toml_pkg_vars.binary_url.u.s != NULL) free(toml_pkg_vars.binary_url.u.s);
+		if (toml_pkg_vars.checksum.u.s != NULL) free(toml_pkg_vars.checksum.u.s);
+		if (toml_pkg_vars.license.u.s != NULL) free(toml_pkg_vars.license.u.s);
+
+		if (input_pkg_name != NULL) free(input_pkg_name);
+		if (input_pkg_version != NULL) free(input_pkg_version);
 	}
-	else if (strcmp(argv[1], "uninstall") == 0)
-	{
-		int find_package_res = 0;
-		char find_package_err_buffer[STRING_MAX_LEN];
-		FILE *pkg_binary;
-
-		find_package_res = find_package(curl_handle, input_pkg_name, input_pkg_version, vctrl_dir, 
-										pkg_download_dir, argv[2], &toml_pkg_vars, find_package_err_buffer);
-		
-		if (find_package_res == 1 && strcmp(find_package_err_buffer, "Package is already installed") != 0)
-		{
-			printf("Could not find package: %s\n", find_package_err_buffer);
-			goto exit_no_vctrl;
-		}
-
-		if (vctrl_file == NULL || vctrl_file_clone == NULL)
-		{
-			perror("Could not open .vctrl or .vctrl.clone");
-			goto exit_no_vctrl;
-		}
-
-		if (file_empty(vctrl_file) == 0)
-		{
-			printf(".vctrl is empty\n");
-			goto exit_no_vctrl;
-		}
-
-		while (fgets(vctrl_line, sizeof(vctrl_line), vctrl_file))
-		{
-			if (strcmp(vctrl_line, argv[2]) == 0 || strcmp(vctrl_line, argv_n) == 0)
-			{
-				fputs(vctrl_line, vctrl_file_clone);
-			}
-		}
-
-		pkg_binary = fopen(pkg_download_dir, "r");
-
-		if (pkg_binary == NULL)
-		{
-			printf("Could not find package's binary file\n");
-			goto exit_no_vctrl;
-		}
-
-		fclose(pkg_binary);
-
-		if (remove(pkg_download_dir) != 0)
-		{
-			perror("Could not remove package's binary file");
-			goto exit_no_vctrl;
-		}
-
-	uninstall_success:
-		printf("Successfully uninstalled package\n");
-		goto exit_vctrl;
-	}
-
-exit_no_vctrl:
-	fclose(vctrl_file);
-	fclose(vctrl_file_clone);
-
-	if (remove(vctrl_dir_clone) != 0)
-	{
-		perror("Could not remove .vctrl.clone");
-	}
-
-	goto exit;
-exit_vctrl:
-	fclose(vctrl_file);
-	fclose(vctrl_file_clone);
-
-	if (remove(vctrl_dir) != 0)
-	{
-		perror("Could not remove .vctrl");
-	}
-
-	if (rename(vctrl_dir_clone, vctrl_dir) != 0)
-	{
-		perror("Could not rename .vctrl.clone");
-	}
-
-	SetFileAttributes(vctrl_dir, vctrl_file_clone_attr);
-
-	goto exit;
-exit:
-	if (toml_pkg_vars.author.u.s != NULL) free(toml_pkg_vars.author.u.s);
-	if (toml_pkg_vars.description.u.s != NULL) free(toml_pkg_vars.description.u.s);
-	if (toml_pkg_vars.binary_url.u.s != NULL) free(toml_pkg_vars.binary_url.u.s);
-	if (toml_pkg_vars.checksum.u.s != NULL) free(toml_pkg_vars.checksum.u.s);
-	if (toml_pkg_vars.license.u.s != NULL) free(toml_pkg_vars.license.u.s);
-
-	if (input_pkg_name != NULL) free(input_pkg_name);
-	if (input_pkg_version != NULL) free(input_pkg_version);
-
+exit_all:
 	curl_easy_cleanup(curl_handle);
 	curl_global_cleanup();
 
