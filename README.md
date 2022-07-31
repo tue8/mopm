@@ -9,6 +9,8 @@
 mopm --help
 ```
 
+**Make sure to add %APPDATA%\mopm\bin to your Path's Environment Variable**
+
 ### Libraries:
 - Christophe Devine's FIPS-180-2 compliant SHA-256 implementation
 - libcurl
