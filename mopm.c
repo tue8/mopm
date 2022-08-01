@@ -7,7 +7,7 @@
 #include <sha256.h>
 #include <toml.h>
 
-#define MOPM_VERSION "0.1.0.1"
+#define MOPM_VERSION "0.2.0"
 #define STRING_MAX_LEN 255
 
 typedef struct
@@ -63,7 +63,7 @@ static char *get_str_before_char(const char *_str, int _char)
     return str;
 }
 
-static int file_empty(FILE *file)
+static int file_size(FILE *file)
 {
     int file_size = 1;
     fseek(file, 0L, SEEK_END);
@@ -76,7 +76,6 @@ static int file_empty(FILE *file)
 static size_t write_file(void *data, size_t size, size_t nmemb, FILE *stream)
 {
     size_t written = fwrite(data, size, nmemb, stream);
-    printf("Write\n");
     return written;
 }
 
@@ -88,7 +87,7 @@ static size_t receive_http_get_res(void *data, size_t size, size_t nmemb, GET_RE
     if (res->ptr == NULL)
     {
         perror("Could not re-allocate memory\n");
-        exit(EXIT_FAILURE);
+        return 1;
     }
 
     memcpy(res->ptr + res->len, data, size * nmemb);
@@ -426,6 +425,7 @@ int main(int argc, char *argv[])
 
         snprintf(argv_n, sizeof(argv_n), "%s\n", argv[2]);
 
+
         if (strcmp(argv[1], "install") == 0)
         {    
             CURLcode pkg_download_res;
@@ -465,7 +465,7 @@ int main(int argc, char *argv[])
 
             printf("Successfully downloaded binary file\n");
 
-            if (file_empty(vctrl_file) == 0)
+            if (file_size(vctrl_file) == 0)
             {
                 fputs(argv[2], vctrl_file_clone);
                 goto install_success;
@@ -504,7 +504,7 @@ int main(int argc, char *argv[])
                 goto exit_failure;
             }
 
-            if (file_empty(vctrl_file) == 0)
+            if (file_size(vctrl_file) == 0)
             {
                 printf(".vctrl is empty\n");
                 goto exit_failure;
