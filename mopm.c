@@ -76,6 +76,7 @@ static int file_empty(FILE *file)
 static size_t write_file(void *data, size_t size, size_t nmemb, FILE *stream)
 {
     size_t written = fwrite(data, size, nmemb, stream);
+    printf("Write\n");
     return written;
 }
 
@@ -126,11 +127,6 @@ static int send_http_get_res(CURL *curl_handle, char *url, GET_RES *http_get_res
 
     perform_res = curl_easy_perform(curl_handle);
 
-    if (perform_res != CURLE_OK)
-    {
-        return 1;
-    }
-
     curl_easy_reset(curl_handle);
     return 0;
 }
@@ -150,7 +146,8 @@ static int send_download_to_file_req(CURL *curl_handle, char *url, char *file_di
 
     if (file_handler == NULL)
     {
-        return 1;
+        fclose(file_handler);
+        return -1;
     }
 
     curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, file_handler);
@@ -158,13 +155,8 @@ static int send_download_to_file_req(CURL *curl_handle, char *url, char *file_di
     perform_res = curl_easy_perform(curl_handle);
 
     fclose(file_handler);
-
-    if (perform_res != CURLE_OK)
-    {
-        return perform_res;
-    }
-
-    return CURLE_OK;
+    curl_easy_reset(curl_handle);
+    return perform_res;
 }
 
 static char *get_checksum_sha256(const char *filename)
@@ -219,7 +211,8 @@ static int verify_package_checksum(const char *vctrl_file_dir, const char *bin_f
 
     while (fgets(line, sizeof(line), vctrl_file))
     {
-        if (strcmp(line, input_argv) == 0 || strcmp(line, input_argv_n) == 0)
+        if (strcmp(line, input_argv) == 0
+         || strcmp(line, input_argv_n) == 0)
         {
             vctrl_bin_file_checksum = get_checksum_sha256(bin_file_dir);
 
@@ -247,12 +240,13 @@ static int find_package(CURL *curl_handle, const char* input_pkg_name, const cha
     char toml_err_buffer[STRING_MAX_LEN];
     char toml_manifest_url[STRING_MAX_LEN];
     GET_RES toml_manifest_raw;
+    int result;
 
     printf("Searching for package...\n");
 
     snprintf(toml_manifest_url, sizeof(toml_manifest_url), "https://raw.githubusercontent.com/Localtings/mopm-pkgs/main/packages/%s/%s/manifest.toml", input_pkg_name, input_pkg_version);
 
-    if (send_http_get_res(curl_handle, toml_manifest_url, &toml_manifest_raw) != 0)
+    if (send_http_get_res(curl_handle, toml_manifest_url, &toml_manifest_raw) != CURLE_OK)
     {
         strcpy(find_package_err_buffer, "Could not send http request");
         return 1;
@@ -435,7 +429,7 @@ int main(int argc, char *argv[])
         if (strcmp(argv[1], "install") == 0)
         {    
             CURLcode pkg_download_res;
-            int vctrl_argv_position = 0;
+            int argv_exist = 0;
 
             find_package_res = find_package(curl_handle, input_pkg_name, input_pkg_version, vctrl_dir, 
                                             pkg_download_dir, argv[2], &toml_pkg_vars, find_package_err_buffer);
@@ -479,17 +473,16 @@ int main(int argc, char *argv[])
 
             while (fgets(vctrl_line, sizeof(vctrl_line), vctrl_file))
             {
-                if (strcmp(vctrl_line, argv_n) == 0)
+                if (strcmp(vctrl_line, argv_n) == 0 
+                 || strcmp(vctrl_line, argv[2]) == 0)
                 {
-                    vctrl_argv_position = 1;
+                    argv_exist = 1;
                 }
-                else
-                {
-                    fputs(vctrl_line, vctrl_file_clone);
-                }
+
+                fputs(vctrl_line, vctrl_file_clone);
             }
 
-            if (vctrl_argv_position == 1)
+            if (argv_exist == 0)
             {
                 fprintf(vctrl_file_clone, "\n%s", argv[2]);
             }
