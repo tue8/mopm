@@ -15,3 +15,5 @@ mopm --help
 - Christophe Devine's FIPS-180-2 compliant SHA-256 implementation
 - libcurl
 - tomlc99
+
+### Pre-built binaries [here](https://localtings.github.io/mopm/)
