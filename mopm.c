@@ -139,6 +139,7 @@ static int send_download_to_file_req(CURL *curl_handle, char *url, char *file_di
     curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYHOST, 1L);
 
     curl_easy_setopt(curl_handle, CURLOPT_URL, url);
+    curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
     curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_file);
 
     file_handler = fopen(file_dir, "wb");
