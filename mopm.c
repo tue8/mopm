@@ -8,7 +8,19 @@
 #include <toml.h>
 
 #define MOPM_VERSION "0.2.0"
+
+
 #define STRING_MAX_LEN 255
+
+#define START_LOADER(_switch, _func) CreateThread(NULL, 0, _func, &_switch, 0, NULL);
+
+#define STOP_LOADER(_switch, _exit_code)\
+{\
+    _switch = -1;\
+    while (_switch == -1);\
+    if (_exit_code == -1) printf("\bfailed\n");\
+    else printf("\bdone\n");\
+}
 
 typedef struct
 {
@@ -24,7 +36,6 @@ typedef struct
     toml_datum_t checksum;
     toml_datum_t binary_url;
 } toml_pkg;
-
 
 static char *get_str_after_char(const char *_str, int _char)
 {
@@ -71,6 +82,28 @@ static int file_size(FILE *file)
     rewind(file);
 
     return file_size;
+}
+
+DWORD WINAPI loader_th(void *data)
+{
+    printf(" \\");
+    
+    while (1)
+    {
+        if (*(int*)data == -1) break;
+        Sleep(250);
+        printf("\b|");
+        Sleep(250);
+        printf("\b/");
+        Sleep(250);
+        printf("\b-");
+        Sleep(250);
+        printf("\b\\");
+    }
+
+    *(int*)data = 1;
+
+    return 0;
 }
 
 static size_t write_file(void *data, size_t size, size_t nmemb, FILE *stream)
@@ -242,18 +275,22 @@ static int find_package(CURL *curl_handle, const char* input_pkg_name, const cha
     GET_RES toml_manifest_raw;
     int result;
 
-    printf("Searching for package...\n");
+    int loader_end_switch;
 
+    printf("Searching for package...");
+    START_LOADER(loader_end_switch, loader_th);
     snprintf(toml_manifest_url, sizeof(toml_manifest_url), "https://raw.githubusercontent.com/Localtings/mopm-pkgs/main/packages/%s/%s/manifest.toml", input_pkg_name, input_pkg_version);
 
     if (send_http_get_res(curl_handle, toml_manifest_url, &toml_manifest_raw) != CURLE_OK)
     {
+        STOP_LOADER(loader_end_switch, -1);
         strcpy(find_package_err_buffer, "Could not send http request");
         return 1;
     }
 
     if (strcmp(toml_manifest_raw.ptr, "404: Not Found") == 0)
     {
+        STOP_LOADER(loader_end_switch, -1);
         strcpy(find_package_err_buffer, "Package not found");
         return 1;
     }
@@ -263,6 +300,7 @@ static int find_package(CURL *curl_handle, const char* input_pkg_name, const cha
 
     if (toml_parser == 0)
     {
+        STOP_LOADER(loader_end_switch, -1);
         snprintf(find_package_err_buffer, sizeof(find_package_err_buffer), "Cannot parse manifest: %s", toml_err_buffer);
         return 1;
     }
@@ -279,16 +317,20 @@ static int find_package(CURL *curl_handle, const char* input_pkg_name, const cha
         toml_vars_buffer->checksum.ok == 0 ||
         toml_vars_buffer->binary_url.ok == 0)
     {
+        STOP_LOADER(loader_end_switch, -1);
         strcpy(find_package_err_buffer, "Invalid manifest");
         return 1;
     }
 
     if (verify_package_checksum(vctrl_dir, pkg_download_dir, input_argv, toml_vars_buffer->checksum.u.s) == 1)
     {
+        STOP_LOADER(loader_end_switch, 1);
         strcpy(find_package_err_buffer, "Package is already installed");
         return 1;
     }
+    
 
+    STOP_LOADER(loader_end_switch, 1);
     return 0;
 }
 
@@ -430,6 +472,7 @@ int main(int argc, char *argv[])
         if (strcmp(argv[1], "install") == 0)
         {    
             CURLcode pkg_download_res;
+            int loader_end_switch;
             int argv_exist = 0;
 
             find_package_res = find_package(curl_handle, input_pkg_name, input_pkg_version, vctrl_dir, 
@@ -448,12 +491,14 @@ int main(int argc, char *argv[])
             input_pkg_name, input_pkg_version, toml_pkg_vars.description.u.s, 
             toml_pkg_vars.license.u.s, toml_pkg_vars.author.u.s);
 
-            printf("\nDownloading package file...\n");
+            printf("\nDownloading package file...");
+            START_LOADER(loader_end_switch, loader_th);
 
             pkg_download_res = send_download_to_file_req(curl_handle, toml_pkg_vars.binary_url.u.s, pkg_download_dir);
 
             if (pkg_download_res != CURLE_OK)
             {
+                STOP_LOADER(loader_end_switch, -1);
                 printf("Could not download package\n");
 
                 if (remove(pkg_download_dir) != 0)
@@ -464,6 +509,7 @@ int main(int argc, char *argv[])
                 goto exit_failure;
             }
 
+            STOP_LOADER(loader_end_switch, 1);
             printf("Successfully downloaded binary file\n");
 
             if (file_size(vctrl_file) == 0)
