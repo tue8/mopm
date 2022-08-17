@@ -171,10 +171,7 @@ int main(int argc, char *argv[])
 
         toml_pkg toml_pkg_vars;
 
-        int find_package_res = 0;
-
         FILE *vctrl_file;
-        int vctrl_file_size;
         FILE *vctrl_file_clone;
         DWORD vctrl_file_clone_attr;
         char vctrl_line[133];
@@ -321,10 +318,9 @@ int main(int argc, char *argv[])
         {
             FILE *pkg_binary;
 
-            find_package_res = find_package(curl_handle, input_pkg_name, input_pkg_version, vctrl_dir, 
-                                            pkg_download_dir, argv[2], &toml_pkg_vars);
-            
-            if (find_package_res == 1) goto out;
+            if (find_package(curl_handle, input_pkg_name, input_pkg_version, vctrl_dir, 
+                             pkg_download_dir, argv[2], &toml_pkg_vars) == 1)
+                             goto out;
 
             if (file_size(vctrl_file) == 0)
             {
