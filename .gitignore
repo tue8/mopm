@@ -1,0 +1,4 @@
+.vscode/
+bin/*.exe
+exports/
+*.bat
