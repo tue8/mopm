@@ -52,11 +52,16 @@ static int get_binary_url(CURL *curl_handle, const char *rls_url,
     json_t *element = json_array_get(root, i);
     json_t *version = json_object_get(element, "name");
     json_t *assets = json_object_get(element, "assets");
+    json_t *tag = json_object_get(element, "tag_name");
 
     if (json_is_object(element) && json_is_array(assets) &&
+        json_is_string(tag) &&
         strcmp(json_string_value(version), pkg_version) == 0)
     {
       json_t *assets_obj = json_array_get(assets, 0);
+
+      if (strcmp(json_string_value(tag), "mopm") != 0)
+        continue;
 
       if (json_is_object(assets_obj))
       {
@@ -77,7 +82,7 @@ static int get_binary_url(CURL *curl_handle, const char *rls_url,
     }
   }
 
-  fprintf(stderr, "Could not find the specified package version\n");
+  fprintf(stderr, "Could not find package's binary\n");
 out:
   json_decref(root);
   return result;

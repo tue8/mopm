@@ -12,5 +12,3 @@ Clone the project and run `make` in the root directory, **get [libcurl.dll](http
 - Christophe Devine's FIPS-180-2 compliant SHA-256 implementation
 - libcurl
 - jansson
-
-### [Pre-built binaries](https://localtings.github.io/mopm/)

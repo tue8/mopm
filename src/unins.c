@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 
   if (remove(bin_dir) != 0)
   {
-    perror("Could not remove package's binary file");
+    perror("Could not remove package's binary");
     goto out;
   }
 
