@@ -9,6 +9,14 @@ struct get_res
     size_t len;
 };
 
+struct download_data
+{
+    CURL *curl_handle;
+    curl_off_t totall;
+    curl_off_t currl;
+    FILE *file;
+};
+
 int send_http_get(CURL *curl_handle, const char *url, struct get_res *res);
 int download_to_file(CURL *curl_handle, char *url, char *file_dir);
 
