@@ -13,19 +13,35 @@ static int vctrl_condition_func(struct vctrl *_vctrl, char *pkg, void *ud)
 
 static int vctrl_condition(struct vctrl *_vctrl, char *line, char *pkg, void *ud)
 {
-  return (strcmp(line, pkg) == 0);
+  char *l_pkg_name = get_str_before_char(line, '@');
+  char *l_pkg_version = get_str_after_char(line, '@');
+  char *pkg_name = get_str_before_char(pkg, '@');
+  
+  int result = 0;
+
+  if (l_pkg_name == NULL || l_pkg_version == NULL)
+    result = 1;
+  else
+    result = (strcmp(l_pkg_name, (pkg_name == NULL) ? pkg : pkg_name) == 0);
+
+  free(l_pkg_name);
+  free(l_pkg_version);
+  if (pkg_name != NULL)
+    free(pkg_name);
+
+  return result;
 }
 
 int main(int argc, char *argv[])
 {
   CURL *curl_handle;
 
-  char *pkg_name;
-  char *pkg_version;
+  char *pkg_name = NULL, *pkg_version = NULL;
 
   struct vctrl _vctrl;
+  struct find_package_data fpd;
 
-  char *bin_dir;
+  char *bin_dir = NULL;
 
   char *pkg = strdup(argv[1]);
 
@@ -40,6 +56,9 @@ int main(int argc, char *argv[])
     return 1;
   }
 
+  if (vctrl_init(&_vctrl) == 1)
+    return 1;
+
   if (argc != 2)
   {
     fprintf(stderr, "Invalid arguments count\n");
@@ -48,7 +67,7 @@ int main(int argc, char *argv[])
 
   if (strlen(pkg) == 0)
   {
-    fprintf(stderr, "Invalid package name");
+    fprintf(stderr, "Invalid package name\n");
     goto out;
   }
 
@@ -61,26 +80,28 @@ int main(int argc, char *argv[])
 
   if (check_name_len(pkg_name) == 1)
   {
-    fprintf(stderr, "Invalid package name");
+    fprintf(stderr, "Invalid package name\n");
     goto out;
   }
 
-  if (pkg_version != NULL && check_version_len(pkg_version) == 1)
+  if (pkg_version != NULL)
   {
-    fprintf(stderr, "Invalid package version");
+    fprintf(stderr, "Cannot uninstall a specific package version, try 'mopm uninstall %s'\n", pkg_name);
+    free(pkg_version);
     goto out;
   }
-
-  if (vctrl_init(&_vctrl, 1) == 1)
-    goto out;
 
   asprintf(&bin_dir, "%s\\mopm\\%s.exe", getenv("APPDATA"), pkg_name);
 
-  if (find_package(curl_handle,
-                   &pkg, pkg_name, pkg_version,
-                   &_vctrl,
-                   bin_dir, NULL) != 3)
+
+
+
+  find_package(&fpd, curl_handle, pkg, pkg_name, NULL);
+
+  if (check_fpd(&fpd) == 1)
     goto out;
+
+  free_fpd(&fpd);
 
   if (file_size(_vctrl.file) == 0)
     goto out;
@@ -103,7 +124,6 @@ out:
   free(bin_dir);
   free(pkg);
   free(pkg_name);
-  free(pkg_version);
 
   vctrl_cleanup(&_vctrl, success);
 

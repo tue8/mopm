@@ -16,9 +16,11 @@ const char *mopm_help = "mopm Package Manager Version " MOPM_VERSION "\n"
 
 static char *get_bin_from_cmd(char *cmd)
 {
-  if (strcmp(cmd, "install") == 0) return "ins";
-  if (strcmp(cmd, "uninstall") == 0) return "unins";
-  
+  if (strcmp(cmd, "install") == 0 || strcmp(cmd, "i") == 0 || strcmp(cmd, "ins") == 0)
+    return "ins";
+  if (strcmp(cmd, "uninstall") == 0 || strcmp(cmd, "ui") == 0 || strcmp(cmd, "unins") == 0)
+    return "unins";
+
   return NULL;
 }
 

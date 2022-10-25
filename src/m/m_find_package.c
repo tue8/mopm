@@ -1,13 +1,39 @@
 #include "m_find_package.h"
-#include "m_vctrl.h"
-#include "m_checksum.h"
 #include "m_string.h"
 #include "m_curl.h"
-#include <jansson.h>
 #include <stdio.h>
 
-static int get_binary_url(CURL *curl_handle, const char *rls_url,
-                          const char *pkg_version, char **bin_url)
+int free_fpd(struct find_package_data *fpd)
+{
+  free(fpd->rls_url);
+  free(fpd->version);
+  free(fpd->license);
+  free(fpd->des);
+  free(fpd->checksum);
+  free(fpd->author);
+  return 0;
+}
+
+int check_fpd(struct find_package_data *fpd)
+{
+  if (fpd->result != 0)
+  {
+    switch (fpd->result)
+    {
+    case 1:
+      fprintf(stderr, "Package could not be found\n");
+      break;
+    case 2:
+      fprintf(stderr, "Package's manifest error\n");
+      break;
+    }
+  }
+
+  return (fpd->result != 0);
+}
+
+int get_binary_url(CURL *curl_handle, const char *rls_url,
+                  const char *pkg_version, char **bin_url)
 {
   struct get_res releases_json;
   json_t *root;
@@ -88,10 +114,8 @@ out:
   return result;
 }
 
-int find_package(CURL *curl_handle,
-                        char **pkg, char *pkg_name, char *pkg_version,
-                        struct vctrl *_vctrl,
-                        char *bin_dir, char **bin_url)
+int find_package(struct find_package_data *ret_data, CURL *curl_handle,
+                 char *pkg, char *pkg_name, char *pkg_version)
 {
   char *manifest_url;
   struct get_res manifest_raw;
@@ -100,7 +124,7 @@ int find_package(CURL *curl_handle,
   json_t *data;
   json_error_t err_buffer;
 
-  int res = 0;
+  ret_data->result = 1;
 
   printf("Searching for package...\n");
   asprintf(&manifest_url, "https://raw.githubusercontent.com/Localtings/"
@@ -108,16 +132,12 @@ int find_package(CURL *curl_handle,
            pkg_name);
 
   if (send_http_get(curl_handle, manifest_url, &manifest_raw) != CURLE_OK)
-  {
-    res = 1;
     goto out;
-  }
 
   free(manifest_url);
 
   if (strcmp(manifest_raw.ptr, "404: Not Found") == 0)
   {
-    res = 1;
     free(manifest_raw.ptr);
     goto out;
   }
@@ -127,7 +147,7 @@ int find_package(CURL *curl_handle,
 
   if (root == 0 || json_is_object(root) == 0)
   {
-    res = 2;
+    ret_data->result = 2;
     goto out;
   }
   else
@@ -139,15 +159,8 @@ int find_package(CURL *curl_handle,
     if (json_is_string(rls_url) == 0 || json_is_string(stable_ver) == 0 ||
         json_is_array(versions) == 0)
     {
-      res = 2;
+      ret_data->result = 2;
       goto out;
-    }
-
-    if (pkg_version == NULL)
-    {
-      free(*pkg);
-      pkg_version = strdup(json_string_value(stable_ver));
-      asprintf(pkg, "%s@%s", pkg_name, pkg_version);
     }
 
     for (int i = 0; i < json_array_size(versions); i++)
@@ -156,8 +169,6 @@ int find_package(CURL *curl_handle,
 
       if (json_is_object(version_obj))
       {
-        int checksum_result = 0;
-
         json_t *version = json_object_get(version_obj, "version");
         json_t *des = json_object_get(version_obj, "description");
         json_t *author = json_object_get(version_obj, "author");
@@ -168,44 +179,27 @@ int find_package(CURL *curl_handle,
             json_is_string(author) == 0 || json_is_string(license) == 0 ||
             json_is_string(checksum) == 0)
         {
-          res = 2;
+          ret_data->result = 2;
           goto out;
         }
 
-        if (strcmp(json_string_value(version), pkg_version) == 0)
+        if (strcmp(json_string_value(version), (pkg_version == NULL) ?
+        json_string_value(stable_ver) : pkg_version)  == 0)
         {
-          printf("Found: %s Version %s\n"
-               "Description: %s\n"
-               "License: %s\n"
-               "Author: %s\n",
-               pkg_name, pkg_version,
-               json_string_value(des),
-               json_string_value(license),
-               json_string_value(author));
+          ret_data->rls_url = strdup(json_string_value(rls_url));
+          ret_data->version = strdup(json_string_value(stable_ver));
+          ret_data->des = strdup(json_string_value(des));
+          ret_data->author = strdup(json_string_value(author));
+          ret_data->license = strdup(json_string_value(license));
+          ret_data->checksum = strdup(json_string_value(checksum));
 
-          checksum_result = verify_checksum(_vctrl, bin_dir, *pkg, json_string_value(checksum));
-
-          if (checksum_result == 1)
-          {
-            res = 3;
-            goto out;
-          }
-
-          if (get_binary_url(curl_handle, json_string_value(rls_url), pkg_version, bin_url) == 1)
-            res = 4;
-
+          ret_data->result = 0;
           goto out;
         }
       }
     }
-    res = 1;
   }
 out:
-  if (res == 1)
-    fprintf(stderr, "Package could not be found\n");
-  else if (res == 3)
-    fprintf(stderr, "Package is already installed\n");
-
   json_decref(root);
-  return res;
+  return ret_data->result;
 }

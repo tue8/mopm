@@ -12,7 +12,7 @@ int file_size(FILE *file)
   return file_size;
 }
 
-int vctrl_init(struct vctrl *_vctrl, int install)
+int vctrl_init(struct vctrl *_vctrl)
 {
   int result = 0;
   char *dir2;
@@ -24,7 +24,7 @@ int vctrl_init(struct vctrl *_vctrl, int install)
 
   asprintf(&_vctrl->dir2, "%s\\%s", dir2, ".vctrl.clone");
 
-  _vctrl->file = fopen(_vctrl->dir, (_vctrl->file == NULL && install == 1) ? "w" : "r");
+  _vctrl->file = fopen(_vctrl->dir, "r");
   if (_vctrl->file == NULL)
   {
     perror("Could not open .vctrl");

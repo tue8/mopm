@@ -27,11 +27,10 @@ static int vctrl_condition(struct vctrl *_vctrl, char *line, char *pkg, void *ud
   {
     l_pkg_version[strlen(l_pkg_version) - 1] = '\0';
 
-    if (strcmp(l_pkg_name, pkg_name) == 0
-    && strcmp(l_pkg_version, pkg_version) != 0)
-      result = 1;  
+    if (strcmp(l_pkg_name, pkg_name) == 0 && strcmp(l_pkg_version, pkg_version) != 0)
+      result = 1;
   }
-  
+
   free(l_pkg_name);
   free(l_pkg_version);
   free(pkg_name);
@@ -55,6 +54,7 @@ int main(int argc, char *argv[])
 
   int success = 0;
   CURLcode download_result = 0;
+  struct find_package_data fpd;
 
   curl_global_init(CURL_GLOBAL_ALL);
   curl_handle = curl_easy_init();
@@ -65,6 +65,9 @@ int main(int argc, char *argv[])
     return 1;
   }
 
+  if (vctrl_init(&_vctrl) == 1)
+    return 1;
+
   if (argc != 2)
   {
     fprintf(stderr, "Invalid arguments count\n");
@@ -73,7 +76,7 @@ int main(int argc, char *argv[])
 
   if (strlen(pkg) == 0)
   {
-    fprintf(stderr, "Invalid package name");
+    fprintf(stderr, "Invalid package name\n");
     goto out;
   }
 
@@ -96,16 +99,24 @@ int main(int argc, char *argv[])
     goto out;
   }
 
-  if (vctrl_init(&_vctrl, 1) == 1)
-    goto out;
-
   asprintf(&bin_dir, "%s\\mopm\\%s.exe", getenv("APPDATA"), pkg_name);
 
-  if (find_package(curl_handle,
-                   &pkg, pkg_name, pkg_version,
-                   &_vctrl,
-                   bin_dir, &bin_url) != 0)
+
+
+
+  find_package(&fpd, curl_handle, pkg, pkg_name, pkg_version);
+
+  if (pkg_version == NULL)
+  {
+    pkg_version = strdup(fpd.version);
+    free(pkg);
+    asprintf(&pkg, "%s@%s", pkg_name, fpd.version);
+  }
+
+  if (check_package_install(&fpd, curl_handle, &_vctrl, pkg, pkg_name, pkg_version, bin_dir, &bin_url) != 0)
     goto out;
+
+  free_fpd(&fpd);
 
   printf("Downloading package...\n");
 

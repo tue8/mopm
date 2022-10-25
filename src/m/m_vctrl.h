@@ -20,7 +20,7 @@ struct vctrl_pkg_con_data
 typedef int (*vctrl_func)(struct vctrl *, char *, void *);
 typedef int (*vctrl_con)(struct vctrl *, char *, char *, void *);
 
-int vctrl_init(struct vctrl *_vctrl, int install);
+int vctrl_init(struct vctrl *_vctrl);
 
 int vctrl_cleanup(struct vctrl *_vctrl, int success);
 
