@@ -1,5 +1,6 @@
 #include "m_vctrl.h"
 #include "m_string.h"
+#include "m_debug.h"
 #include <stdio.h>
 
 int file_size(FILE *file)
@@ -40,7 +41,7 @@ int vctrl_init(struct vctrl *_vctrl)
     goto out;
   }
 out:
-  free(dir2);
+  m_free(dir2);
   return result;
 }
 
@@ -69,8 +70,8 @@ int vctrl_cleanup(struct vctrl *_vctrl, int success)
     perror("Could not rename .vctrl.clone");
   }
 
-  free(_vctrl->dir);
-  free(_vctrl->dir2);
+  m_free(_vctrl->dir);
+  m_free(_vctrl->dir2);
   return 0;
 }
 

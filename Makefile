@@ -5,7 +5,7 @@ BINS=mopm.exe ins.exe unins.exe
 
 all: $(BINS)
 
-debug: CFLAGS+=-g -O0
+debug: CFLAGS+=-g -O0 -D_DEBUG
 debug: $(BINS)
 
 $(BINS): $(SRC)

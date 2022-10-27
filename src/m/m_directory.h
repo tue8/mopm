@@ -2,6 +2,7 @@
 #define M_DIRECTORY
 
 #include <windows.h>
+#include "m_debug.h"
 
 #define create_directory(path)                                                 \
   if (CreateDirectory(path, NULL) == 0                                         \

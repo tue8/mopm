@@ -1,4 +1,6 @@
 #include "m_curl.h"
+#include "m_string.h"
+#include "m_debug.h"
 
 #define PBLEN 40
 
@@ -6,24 +8,22 @@ static int progress_bar(curl_off_t curr, curl_off_t total)
 {
   int done = (int)(((double)curr / (double)total) * PBLEN), i, j;
   int remain = PBLEN - done;
-  char buffer[PBLEN + 3];
+  char buffer[PBLEN + 3] = "";
 
-  strcpy(buffer, "");
+  m_strcat(buffer, "[");
 
-  strcat(buffer, "[");
+  for (i = 0; i < done - 1; i++)
+    m_strcat(buffer, "=");
 
-  for (i = 0; i < done; i++)
-    strcat(buffer, "=");
-
-  if (done < PBLEN)
-    strcat(buffer, ">");
+  if (done > 0)
+    m_strcat(buffer, ">");
 
   for (j = 0; j < remain; j++)
-    strcat(buffer, " ");
+    m_strcat(buffer, " ");
 
-  strcat(buffer, "]");
+  m_strcat(buffer, "]");
 
-  printf("\r%s ", buffer);
+  printf("\r%s", buffer);
   fflush(stdout);
   return 0;
 }
@@ -75,7 +75,7 @@ int send_http_get(CURL *curl_handle, const char *url, struct get_res *res)
   init_curl_handler(curl_handle, url);
 
   res->len = 0;
-  res->ptr = malloc(res->len + 1);
+  res->ptr = m_malloc(res->len + 1);
   if (res->ptr == NULL)
   {
     perror("Could not allocate memory");

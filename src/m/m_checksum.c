@@ -2,6 +2,7 @@
 #include "m_string.h"
 #include <stdio.h>
 #include <sha256.h>
+#include "m_debug.h"
 
 char *get_checksum(const char *filename)
 {
@@ -10,7 +11,7 @@ char *get_checksum(const char *filename)
   sha256_context ctx;
   unsigned char buf[1000];
   unsigned char sha256sum[32];
-  char *hex_sha256sum = malloc(sizeof(char) * 65);
+  char *hex_sha256sum = m_malloc(sizeof(char) * 65);
 
   if ((f = fopen(filename, "rb")) == NULL)
   {
@@ -47,7 +48,7 @@ static int condition_func(struct vctrl *_vctrl, char *pkg, void *ud)
   struct checksum_data *cd = ud;
   char *bin_checksum = get_checksum(cd->bin_dir);
   int result = (bin_checksum != NULL && strcmp(bin_checksum, cd->checksum) == 0);
-  free(bin_checksum);
+  m_free(bin_checksum);
   return result;
 }
 
@@ -57,7 +58,7 @@ static int condition(struct vctrl *_vctrl, char *line, char *pkg, void *ud)
   char *pkg_n;
   asprintf(&pkg_n, "%s\n", pkg);
   result = (strcmp(line, pkg) == 0 || strcmp(line, pkg_n) == 0) ? 0 : 1;
-  free(pkg_n);
+  m_free(pkg_n);
   return result;
 }
 

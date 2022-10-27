@@ -1,16 +1,17 @@
 #include "m_find_package.h"
 #include "m_string.h"
 #include "m_curl.h"
+#include "m_debug.h"
 #include <stdio.h>
 
 int free_fpd(struct find_package_data *fpd)
 {
-  free(fpd->rls_url);
-  free(fpd->version);
-  free(fpd->license);
-  free(fpd->des);
-  free(fpd->checksum);
-  free(fpd->author);
+  m_free(fpd->rls_url);
+  m_free(fpd->version);
+  m_free(fpd->license);
+  m_free(fpd->des);
+  m_free(fpd->checksum);
+  m_free(fpd->author);
   return 0;
 }
 
@@ -58,7 +59,7 @@ int get_binary_url(CURL *curl_handle, const char *rls_url,
   }
 
   root = json_loads(releases_json.ptr, 0, &error);
-  free(releases_json.ptr);
+  m_free(releases_json.ptr);
 
   if (root == 0)
   {
@@ -134,16 +135,16 @@ int find_package(struct find_package_data *ret_data, CURL *curl_handle,
   if (send_http_get(curl_handle, manifest_url, &manifest_raw) != CURLE_OK)
     goto out;
 
-  free(manifest_url);
+  m_free(manifest_url);
 
   if (strcmp(manifest_raw.ptr, "404: Not Found") == 0)
   {
-    free(manifest_raw.ptr);
+    m_free(manifest_raw.ptr);
     goto out;
   }
 
   root = json_loads(manifest_raw.ptr, 0, &err_buffer);
-  free(manifest_raw.ptr);
+  m_free(manifest_raw.ptr);
 
   if (root == 0 || json_is_object(root) == 0)
   {
