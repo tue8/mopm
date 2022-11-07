@@ -1,8 +1,18 @@
+/*
+ * Created on Sun Nov 06 2022
+ * mopm Package Manger
+ * https://github.com/Localtings/mopm
+ * Licensed under MIT license
+ * Copyright (c) 2022 Localtings
+ */
+
 #include "m_checksum.h"
 #include "m_string.h"
 #include <stdio.h>
 #include <sha256.h>
 #include "m_debug.h"
+#include <string.h>
+#include "m_vctrl.h"
 
 char *get_checksum(const char *filename)
 {
@@ -74,6 +84,6 @@ int verify_checksum(struct vctrl *_vctrl, char *bin_dir, char *pkg,
   cd.checksum = checksum;
 
   vctrl_pkg_con(&result, _vctrl, pkg, &cd, &condition_func, &condition);
-  
+
   return result.con_func_result;
 }

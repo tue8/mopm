@@ -1,3 +1,11 @@
+/*
+ * Created on Sun Nov 06 2022
+ * mopm Package Manger
+ * https://github.com/Localtings/mopm
+ * Licensed under MIT license
+ * Copyright (c) 2022 Localtings
+ */
+
 #ifndef M_CURL_H_
 #define M_CURL_H
 
@@ -5,19 +13,11 @@
 
 struct get_res
 {
-    char *ptr;
-    size_t len;
-};
-
-struct download_data
-{
-    CURL *curl_handle;
-    curl_off_t totall;
-    curl_off_t currl;
-    FILE *file;
+  char *ptr;
+  size_t len;
 };
 
 int send_http_get(CURL *curl_handle, const char *url, struct get_res *res);
-int download_to_file(CURL *curl_handle, char *url, char *file_dir);
+int download_to_file(CURL *curl_handle, const char *url, char *file_dir);
 
 #endif

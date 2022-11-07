@@ -1,3 +1,11 @@
+/*
+ * Created on Sun Nov 06 2022
+ * mopm Package Manger
+ * https://github.com/Localtings/mopm
+ * Licensed under MIT license
+ * Copyright (c) 2022 Localtings
+ */
+
 #ifndef M_FIND_PACKAGE_H_
 #define M_FIND_PACKAGE_H_
 
@@ -6,14 +14,13 @@
 
 struct find_package_data
 {
+  json_t *json_root;
   int result;
-  char *rls_url, *version, *des, *author, *license, *checksum;
+  const char *version, *des, *author, *license, *checksum, *bin_url;
 };
 
 int free_fpd(struct find_package_data *fpd);
 int check_fpd(struct find_package_data *fpd);
-int get_binary_url(CURL *curl_handle, const char *rls_url,
-                  const char *pkg_version, char **bin_url);
 int find_package(struct find_package_data *ret_data, CURL *curl_handle,
                  char *pkg, char *pkg_name, char *pkg_version);
 

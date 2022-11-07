@@ -1,3 +1,11 @@
+/*
+ * Created on Sun Nov 06 2022
+ * mopm Package Manger
+ * https://github.com/Localtings/mopm
+ * Licensed under MIT license
+ * Copyright (c) 2022 Localtings
+ */
+
 #include "m_string.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,7 +14,7 @@
 
 char *get_str_after_char(const char *_str, int _char)
 {
-  char *str = strdup(_str);
+  char *str = m_strdup(_str);
   char *last_char;
 
   strcpy(str, _str);
@@ -25,7 +33,7 @@ char *get_str_after_char(const char *_str, int _char)
 
 char *get_str_before_char(const char *_str, int _char)
 {
-  char *str = strdup(_str);
+  char *str = m_strdup(_str);
   char *last_char;
 
   strcpy(str, _str);

@@ -1,3 +1,11 @@
+/*
+ * Created on Sun Nov 06 2022
+ * mopm Package Manger
+ * https://github.com/Localtings/mopm
+ * Licensed under MIT license
+ * Copyright (c) 2022 Localtings
+ */
+
 #include "m_curl.h"
 #include "m_string.h"
 #include "m_debug.h"
@@ -27,6 +35,14 @@ static int progress_bar(curl_off_t curr, curl_off_t total)
   fflush(stdout);
   return 0;
 }
+
+struct download_data
+{
+  CURL *curl_handle;
+  curl_off_t totall;
+  curl_off_t currl;
+  FILE *file;
+};
 
 static size_t write_file(void *data, size_t size, size_t nmemb, struct download_data *dd)
 {
@@ -92,13 +108,13 @@ int send_http_get(CURL *curl_handle, const char *url, struct get_res *res)
   return 0;
 }
 
-int download_to_file(CURL *curl_handle, char *url, char *file_dir)
+int download_to_file(CURL *curl_handle, const char *url, char *file_dir)
 {
   CURLcode perform_res;
   struct download_data dd;
 
   init_curl_handler(curl_handle, url);
-  
+
   curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_file);
 
   dd.totall = 0;
