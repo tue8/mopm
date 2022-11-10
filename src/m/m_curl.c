@@ -9,6 +9,7 @@
 #include "m_curl.h"
 #include "m_string.h"
 #include "m_debug.h"
+#include <string.h>
 
 #define PBLEN 40
 

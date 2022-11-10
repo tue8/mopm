@@ -11,11 +11,13 @@
 #include "m_curl.h"
 #include "m_debug.h"
 #include <stdio.h>
+#include <string.h>
 
 int free_fpd(struct find_package_data *fpd)
 {
-  json_decref(fpd->json_root);
-  return 0;
+  if (fpd->result == 0)
+    json_decref(fpd->json_root);
+  return fpd->result;
 }
 
 int check_fpd(struct find_package_data *fpd)
@@ -90,6 +92,7 @@ int find_package(struct find_package_data *ret_data, CURL *curl_handle,
       if (json_is_object(version_obj))
       {
         json_t *bin_url = json_object_get(version_obj, "file");
+        json_t *entry = json_object_get(version_obj, "entry");
         json_t *version = json_object_get(version_obj, "version");
         json_t *des = json_object_get(version_obj, "description");
         json_t *author = json_object_get(version_obj, "author");
@@ -98,7 +101,8 @@ int find_package(struct find_package_data *ret_data, CURL *curl_handle,
 
         if (json_is_string(version) == 0 || json_is_string(des) == 0 ||
             json_is_string(author) == 0 || json_is_string(license) == 0 ||
-            json_is_string(checksum) == 0 || json_is_string(bin_url) == 0)
+            json_is_string(checksum) == 0 || json_is_string(bin_url) == 0 ||
+            json_is_string(entry) == 0)
         {
           ret_data->result = 2;
           goto out;
@@ -107,12 +111,13 @@ int find_package(struct find_package_data *ret_data, CURL *curl_handle,
         if (strcmp(json_string_value(version), (pkg_version == NULL) ?
         json_string_value(stable_ver) : pkg_version)  == 0)
         {
+          ret_data->bin_url = json_string_value(bin_url);
+          ret_data->entry = json_string_value(entry);
           ret_data->version = json_string_value(stable_ver);
           ret_data->des = json_string_value(des);
           ret_data->author = json_string_value(author);
           ret_data->license = json_string_value(license);
           ret_data->checksum = json_string_value(checksum);
-          ret_data->bin_url = json_string_value(bin_url);
           ret_data->result = 0;
           goto out;
         }

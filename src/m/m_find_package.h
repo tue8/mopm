@@ -16,7 +16,7 @@ struct find_package_data
 {
   json_t *json_root;
   int result;
-  const char *version, *des, *author, *license, *checksum, *bin_url;
+  const char *entry, *version, *des, *author, *license, *checksum, *bin_url;
 };
 
 int free_fpd(struct find_package_data *fpd);

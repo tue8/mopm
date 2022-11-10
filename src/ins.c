@@ -12,8 +12,8 @@
 #include "m/m_vctrl.h"
 #include "m/m_find_package.h"
 #include "m/m_directory.h"
-#include "m/m_checksum.h"
 #include "m/m_extract.h"
+#include "m/m_batch.h"
 #include "m/m_debug.h"
 #include <stdio.h>
 
@@ -26,23 +26,6 @@ static int print_package_info(char *name, char *ver, const char *fpd_ver,
          "License: %s\n"
          "Author: %s\n",
          name, (ver == NULL) ? fpd_ver : ver, des, license, author);
-}
-
-static int check_package_install(struct find_package_data *fpd,
-                                 struct vctrl *_vctrl, char *pkg,
-                                 char *bin_dir)
-{
-  if (check_fpd(fpd) == 1)
-    return 1;
-  else
-  {
-    if (verify_checksum(_vctrl, bin_dir, pkg, fpd->checksum) == 1)
-    {
-      fprintf(stderr, "Package is already installed\n");
-      return 1;
-    }
-  }
-  return 0;
 }
 
 static int vctrl_condition_func(struct vctrl *_vctrl, char *pkg, void *ud)
@@ -117,7 +100,6 @@ int main(int argc, char *argv[])
   char *bin_dir;
   char *pkg;
   int success;
-  CURLcode download_result;
   struct find_package_data fpd;
 
   if (m_init(argc, "install") == 1)
@@ -138,11 +120,10 @@ int main(int argc, char *argv[])
   }
   asprintf(&pkg_dir, "%s\\mopm\\%s", getenv("APPDATA"), pkg_name);
   asprintf(&bin_dir, "%s\\%s.zip", pkg_dir, pkg_name);
-
   success = 0;
   create_directory(pkg_dir);
   find_package(&fpd, curl_handle, pkg, pkg_name, pkg_version);
-  if (check_package_install(&fpd, &_vctrl, pkg, bin_dir) != 0)
+  if (check_fpd(&fpd) == 1)
   {
     remove_directory(pkg_dir);
     goto out;
@@ -154,9 +135,7 @@ int main(int argc, char *argv[])
     asprintf(&pkg, "%s@%s", pkg_name, fpd.version);
   }
   printf("Downloading package...\n");
-  download_result = download_to_file(curl_handle, fpd.bin_url, bin_dir);
-  free_fpd(&fpd);
-  if (download_result != CURLE_OK)
+  if (download_to_file(curl_handle, fpd.bin_url, bin_dir) != CURLE_OK)
   {
     fprintf(stderr, "Could not download package\n");
     remove(bin_dir);
@@ -171,7 +150,11 @@ int main(int argc, char *argv[])
     fprintf(stderr, "Failed to extract package\n");
     goto out;
   }
-
+  if (create_batch(pkg_name, pkg_dir, fpd.entry) != 0)
+  {
+    fprintf(stderr, "Failed to create batch file\n");
+    goto out;
+  }
   if (file_size(_vctrl.file) == 0)
     fprintf(_vctrl.file2, pkg);
   else
@@ -187,6 +170,7 @@ out:
     m_free(pkg_version);
   m_free(bin_dir);
   m_free(pkg_dir);
+  free_fpd(&fpd);
   vctrl_cleanup(&_vctrl, success);
   curl_easy_cleanup(curl_handle);
   curl_global_cleanup();
