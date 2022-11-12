@@ -13,6 +13,7 @@
 struct vctrl;
 
 int m_init(int argc, char *cmd);
-int m_init_install(struct vctrl *_vctrl, char *pkg, char **pkg_name, char **pkg_version, int argc);
+int m_init_install(struct vctrl *_vctrl, char *pkg, char **pkg_name, char **pkg_version);
+int m_init_uninstall(struct vctrl *_vctrl, char *pkg);
 
 #endif

@@ -9,6 +9,7 @@
 #ifndef M_BATCH_
 #define M_BATCH_
 
+char *exe_to_bat(const char *entry);
 int create_batch(const char *pkg_name, const char *pkg_dir, const char *entry);
 
 #endif

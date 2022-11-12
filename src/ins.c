@@ -45,7 +45,8 @@ static int vctrl_condition(struct vctrl *_vctrl, char *line, char *pkg, void *ud
   int version_result;
 
   result = 0;
-  if ((l_pkg_name = get_str_before_char(line, '@')) == NULL || (l_pkg_version = get_str_after_char(line, '@')) == NULL)
+  if ((l_pkg_name = get_str_before_char(line, '@')) == NULL ||
+      (l_pkg_version = get_str_after_char(line, '@')) == NULL)
     result = 1;
   else
   {
@@ -112,7 +113,7 @@ int main(int argc, char *argv[])
     return 1;
   }
   pkg = m_strdup(argv[1]);
-  if (m_init_install(&_vctrl, pkg, &pkg_name, &pkg_version, argc) == 1)
+  if (m_init_install(&_vctrl, pkg, &pkg_name, &pkg_version) == 1)
   {
     curl_easy_cleanup(curl_handle);
     curl_global_cleanup();
@@ -159,9 +160,7 @@ int main(int argc, char *argv[])
     fprintf(_vctrl.file2, pkg);
   else
     if (vctrl_print_pkg(&_vctrl, pkg) != 0)
-    {
       fprintf(stderr, "Failed to edit .vctrl\n");
-    }
   success = 1;
 out:
   m_free(pkg);

@@ -32,11 +32,13 @@ int vctrl_init(struct vctrl *_vctrl)
   dir2 = m_strdup(_vctrl->dir);
   dir2[strlen(_vctrl->dir) - strlen("\\.vctrl")] = '\0';
   asprintf(&_vctrl->dir2, "%s\\%s", dir2, ".vctrl.clone");
-  _vctrl->file = fopen(_vctrl->dir, "r");
-  if (_vctrl->file == NULL)
+  if ((_vctrl->file = fopen(_vctrl->dir, "r")) == NULL)
   {
-    perror("Could not open .vctrl");
-    goto out;
+    if ((_vctrl->file = fopen(_vctrl->dir, "w")) == NULL)
+    {
+      perror("Could not open .vctrl");
+      goto out;
+    }
   }
   _vctrl->file2 = fopen(_vctrl->dir2, "w+");
   if (_vctrl->file2 == NULL)
@@ -61,19 +63,14 @@ int vctrl_cleanup(struct vctrl *_vctrl, int success)
     if (success == 0)
     {
       if (remove(_vctrl->dir2) != 0)
-      {
         perror("Could not remove .vctrl.clone");
-      }
-
-      return 1;
     }
-    if (remove(_vctrl->dir) != 0)
+    else
     {
-      perror("Could not remove .vctrl");
-    }
-    if (rename(_vctrl->dir2, _vctrl->dir) != 0)
-    {
-      perror("Could not rename .vctrl.clone");
+      if (remove(_vctrl->dir) != 0)
+        perror("Could not remove .vctrl");
+      if (rename(_vctrl->dir2, _vctrl->dir) != 0)
+        perror("Could not rename .vctrl.clone");
     }
   }
   m_free(_vctrl->dir);

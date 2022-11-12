@@ -14,6 +14,7 @@
 #include "m_string.h"
 #include "m_directory.h"
 #include "m_cmd.h"
+#include <string.h>
 
 int m_init(int argc, char *cmd)
 {
@@ -51,7 +52,7 @@ out:
 
 static int check_name_len(char *name)
 {
-  return (((strlen(name) <= 100) && (strlen(name) > 2)) == 0);
+  return (((strlen(name) <= 32) && (strlen(name) > 2)) == 0);
 }
 
 static int check_version_len(char *version)
@@ -59,7 +60,7 @@ static int check_version_len(char *version)
   return (((strlen(version) <= 32) && (strlen(version) > 0)) == 0);
 }
 
-int m_init_install(struct vctrl *_vctrl, char *pkg, char **pkg_name, char **pkg_version, int argc)
+int m_init_install(struct vctrl *_vctrl, char *pkg, char **pkg_name, char **pkg_version)
 {
   int result;
 
@@ -94,12 +95,40 @@ int m_init_install(struct vctrl *_vctrl, char *pkg, char **pkg_name, char **pkg_
 out:
   if (result == 1)
   {
-    if (pkg != NULL)
-      m_free(pkg);
+    m_free(pkg);
     if (*pkg_name != NULL)
       m_free(*pkg_name);
     if (*pkg_version != NULL)
       m_free(*pkg_version);
+    vctrl_cleanup(_vctrl, 0);
+  }
+  return result;
+}
+
+int m_init_uninstall(struct vctrl *_vctrl, char *pkg)
+{
+  int result;
+  char *last_char;
+
+  result = 1;
+  if (vctrl_init(_vctrl) == 1)
+    goto out;
+  if (check_name_len(pkg) == 1)
+  {
+    fprintf(stderr, "Invalid package name length");
+    goto out;
+  }
+  last_char = strrchr(pkg, '@');
+  if (last_char != NULL)
+  {
+    fprintf(stderr, "You cannot uninstall a specific package version in mopm");
+    goto out;
+  }
+  result = 0;
+out:
+  if (result == 1)
+  {
+    m_free(pkg);
     vctrl_cleanup(_vctrl, 0);
   }
   return result;

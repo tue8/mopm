@@ -20,8 +20,7 @@
     goto out;                                                                  \
   }
 
-#define remove_directory(path) RemoveDirectory(path)
-
 char *get_current_directory();
+int remove_directory(char *path);
 
 #endif
