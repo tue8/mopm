@@ -12,6 +12,7 @@
 #include "m/m_vctrl.h"
 #include "m/m_find_package.h"
 #include "m/m_directory.h"
+#include "m/m_validate_package.h"
 #include "m/m_extract.h"
 #include "m/m_batch.h"
 #include "m/m_debug.h"
@@ -71,22 +72,27 @@ static int vctrl_print_pkg(struct vctrl *_vctrl, char *pkg)
 {
   struct vctrl_pkg_con_data result;
   int exist;
+  char last_c;
 
   exist = 0;
   vctrl_pkg_con(&result, _vctrl, pkg, &exist,
                 &vctrl_condition_func, &vctrl_condition);
   if (exist != 1)
   {
-    char last_c;
-    if (fseek(_vctrl->file2, -2, SEEK_END) != 0)
-      return 1;
-    last_c = fgetc(_vctrl->file2);
-    if (fseek(_vctrl->file2, 0L, SEEK_END) != 0)
-      return 1;
-    if (last_c == '\n')
+    if (file_size(_vctrl->file2) == 0)
       fprintf(_vctrl->file2, pkg);
     else
-      fprintf(_vctrl->file2, "\n%s", pkg);
+    {
+      if (fseek(_vctrl->file2, -2, SEEK_END) != 0)
+        return 1;
+      last_c = fgetc(_vctrl->file2);
+      if (fseek(_vctrl->file2, 0L, SEEK_END) != 0)
+        return 1;
+      if (last_c == '\n')
+        fprintf(_vctrl->file2, pkg);
+      else
+        fprintf(_vctrl->file2, "\n%s", pkg);
+    }
   }
   return 0;
 }
@@ -122,13 +128,12 @@ int main(int argc, char *argv[])
   asprintf(&pkg_dir, "%s\\mopm\\%s", getenv("APPDATA"), pkg_name);
   asprintf(&bin_dir, "%s\\%s.zip", pkg_dir, pkg_name);
   success = 0;
-  create_directory(pkg_dir);
   find_package(&fpd, curl_handle, pkg, pkg_name, pkg_version);
   if (check_fpd(&fpd) == 1)
-  {
-    remove_directory(pkg_dir);
     goto out;
-  }
+  create_directory(pkg_dir);
+  if (validate_package(&_vctrl, &fpd, pkg_dir, pkg) == 1)
+    goto out;
   print_package_info(pkg_name, pkg_version, fpd.version, fpd.des, fpd.license, fpd.author);
   if (pkg_version == NULL)
   {
@@ -159,8 +164,10 @@ int main(int argc, char *argv[])
   if (file_size(_vctrl.file) == 0)
     fprintf(_vctrl.file2, pkg);
   else
+  {
     if (vctrl_print_pkg(&_vctrl, pkg) != 0)
       fprintf(stderr, "Failed to edit .vctrl\n");
+  }
   success = 1;
 out:
   m_free(pkg);
