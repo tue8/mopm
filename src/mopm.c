@@ -22,14 +22,6 @@ const char *mopm_help = "mopm Version "MOPM_VERSION"\n"
                         "                    install\n"
                         "                    uninstall\n";
 
-static char *as_strcat(char *a, char *b) {
-  char *p, *q, *rtn;
-  rtn = q = malloc(strlen(a) + strlen(b) + 1);
-  for (p = a; (*q = *p) != '\0'; ++p, ++q) {}
-  for (p = b; (*q = *p) != '\0'; ++p, ++q) {}
-  return rtn;
-}
-
 int main(int argc, char *argv[])
 {
   int i;

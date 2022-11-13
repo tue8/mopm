@@ -50,7 +50,6 @@ int main(int argc, char *argv[])
   char *pkg_dir;
   char *batch_dir;
   char *pkg;
-  char *entry;
   int success;
   int remove_success;
   struct find_package_data fpd;
@@ -76,11 +75,7 @@ int main(int argc, char *argv[])
   if (check_fpd(&fpd) == 1)
     goto out;
   success = 0;
-  entry = exe_to_bat(fpd.entry);
-  if (entry == NULL)
-    goto out;
-  asprintf(&batch_dir, "%s\\..\\%s", pkg_dir, entry);
-  m_free(entry);
+  asprintf(&batch_dir, "%s\\..\\%s.bat", pkg_dir, pkg);
   remove_success = remove(batch_dir);
   m_free(batch_dir);
   if (remove_success != 0)

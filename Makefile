@@ -1,7 +1,7 @@
 SRC=$(wildcard src/*.c)
 ASRC=$(wildcard include/*.c include/*/*.c src/*/*.c)
 CFLAGS=-I include -L lib -l curl -l jansson -l archive.dll
-BINS=mopm.exe ins.exe unins.exe
+BINS=mopm mo-get mo-remove
 
 all: $(BINS)
 
@@ -9,6 +9,6 @@ debug: CFLAGS+=-g -O0 -D_DEBUG
 debug: $(BINS)
 
 $(BINS): $(SRC)
-	gcc $(ASRC) src/$(subst .exe,.c,$@) $(CFLAGS) -o bin/$@
+	gcc $(ASRC) src/$@.c $(CFLAGS) -o bin/$@ 
 
 .PHONY: all debug

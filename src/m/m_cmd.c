@@ -13,13 +13,13 @@ int get_cmd_info(struct cmd_info *info, char *cmd)
 {
   if (strcmp(cmd, "install") == 0)
   {
-    info->bin = "ins";
+    info->bin = "mo-get";
     info->usage = "<package name>@<package version> || <package name>";
     info->args = 1;
   }
   else if (strcmp(cmd, "uninstall") == 0)
   {
-    info->bin = "unins";
+    info->bin = "mo-remove";
     info->usage = "<package name>";
     info->args = 1;
   }
