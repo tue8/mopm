@@ -12,6 +12,7 @@
 #include "m/m_directory.h"
 #include "m/m_init.h"
 #include "m/m_cmd.h"
+#include "m/m_debug.h"
 
 #define MOPM_VERSION "0.2.4"
 
@@ -51,10 +52,10 @@ int main(int argc, char *argv[])
   {
     char *str;
     asprintf(&str, "%s %s", cmd_full, argv[i]);
-    free(cmd_full);
+    m_free(cmd_full);
     cmd_full = str;
   }
   system(cmd_full);
-  free(cmd_full);
+  m_free(cmd_full);
   return 0;
 }

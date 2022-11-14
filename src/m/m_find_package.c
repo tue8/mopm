@@ -43,9 +43,9 @@ int find_package(struct find_package_data *ret_data, CURL *curl_handle,
 {
   char *manifest_url;
   struct get_res manifest_raw;
-
   json_t *data;
   json_error_t err_buffer;
+  CURLcode result;
 
   ret_data->result = 1;
 
@@ -54,12 +54,9 @@ int find_package(struct find_package_data *ret_data, CURL *curl_handle,
                           "mopm-pkgs/main/packages/%s/manifest.json",
            pkg_name);
 
-  if (send_http_get(curl_handle, manifest_url, &manifest_raw) != CURLE_OK)
-    return 1;
-
+  result = send_http_get(curl_handle, manifest_url, &manifest_raw);
   m_free(manifest_url);
-
-  if (strcmp(manifest_raw.ptr, "404: Not Found") == 0)
+  if (result != CURLE_OK || strcmp(manifest_raw.ptr, "404: Not Found") == 0)
   {
     m_free(manifest_raw.ptr);
     return 1;

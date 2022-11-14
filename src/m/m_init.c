@@ -46,7 +46,7 @@ int m_init(int argc, char *cmd)
   create_directory(mopm_dir);
   result = 0;
 out:
-  free(mopm_dir);
+  m_free(mopm_dir);
   return result;
 }
 

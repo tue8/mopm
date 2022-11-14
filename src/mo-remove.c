@@ -88,8 +88,8 @@ int main(int argc, char *argv[])
   vctrl_remove_pkg(&_vctrl, pkg);
   success = 1;
 out:
-  free(pkg);
-  free(pkg_dir);
+  m_free(pkg);
+  m_free(pkg_dir);
   free_fpd(&fpd);
   vctrl_cleanup(&_vctrl, success);
   if (success == 1)

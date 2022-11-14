@@ -38,6 +38,7 @@ int validate_package(struct vctrl *_vctrl, struct find_package_data *fpd,
     goto out;
   }
 out:
+  m_free(pkg_full);
   m_free(entry_dir);
   return result;
 }

@@ -8,6 +8,7 @@
 
 #include "m_extract.h"
 #include "m_string.h"
+#include "m_debug.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <archive.h>
@@ -82,7 +83,7 @@ int extract(const char *name, const char *path)
       fprintf(stderr, "%s\n", archive_error_string(ext));
     if (r < ARCHIVE_WARN)
       return 1;
-    free(dest_file);
+    m_free(dest_file);
   }
   archive_read_close(a);
   archive_read_finish(a);
