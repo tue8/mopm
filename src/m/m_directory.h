@@ -14,7 +14,7 @@
 
 #define create_directory(path)                                                 \
   if (CreateDirectory(path, NULL) == 0                                         \
-  && GetLastError() != ERROR_ALREADY_EXISTS)                                   \
+  && GetLastError() != 183L) /* ERROR_ALREADY_EXISTS */                        \
   {                                                                            \
     fprintf(stderr, "Could not create " #path "\n");                           \
     goto out;                                                                  \
