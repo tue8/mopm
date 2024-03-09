@@ -9,6 +9,7 @@
 #include "m_vctrl.h"
 #include "m_string.h"
 #include "m_debug.h"
+#include "../mopm.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -24,80 +25,69 @@ int file_size(FILE *file)
 int vctrl_init(struct vctrl *_vctrl)
 {
   int result;
-  char *dir2;
+  char *dirclone;
 
-  result = 1;
-  _vctrl->init = 0;
   asprintf(&_vctrl->dir, "%s\\mopm\\.vctrl", getenv("APPDATA"));
-  dir2 = m_strdup(_vctrl->dir);
-  dir2[strlen(_vctrl->dir) - strlen("\\.vctrl")] = '\0';
-  asprintf(&_vctrl->dir2, "%s\\%s", dir2, ".vctrl.clone");
+
+  dirclone = m_strdup(_vctrl->dir);
+  dirclone[strlen(_vctrl->dir) - strlen("\\.vctrl")] = '\0';
+
+  asprintf(&_vctrl->dirclone, "%s\\%s", dirclone, ".vctrl.clone");
+
   if ((_vctrl->file = fopen(_vctrl->dir, "r")) == NULL)
   {
     if ((_vctrl->file = fopen(_vctrl->dir, "w")) == NULL)
     {
       perror("Could not open .vctrl");
+      result = M_FAIL;
       goto out;
     }
   }
-  _vctrl->file2 = fopen(_vctrl->dir2, "w+");
-  if (_vctrl->file2 == NULL)
+
+  _vctrl->fclone = fopen(_vctrl->dirclone, "w+");
+  if (_vctrl->fclone == NULL)
   {
     perror("Could not create .vctrl.clone");
+    result = M_FAIL;
     goto out;
   }
-  result = 0;
+
+  result = M_SUCCESS;
 out:
-  if (result == 0)
-    _vctrl->init = 1;
-  m_free(dir2);
+  m_free(dirclone);
   return result;
 }
 
-int vctrl_cleanup(struct vctrl *_vctrl, int success)
+int vctrl_cleanup(struct vctrl *_vctrl, int code)
 {
-  if (_vctrl->init == 1)
+  fclose(_vctrl->file);
+  fclose(_vctrl->fclone);
+  if (code == M_FAIL)
   {
-    fclose(_vctrl->file);
-    fclose(_vctrl->file2);
-    if (success == 0)
-    {
-      if (remove(_vctrl->dir2) != 0)
-        perror("Could not remove .vctrl.clone");
-    }
-    else
-    {
-      if (remove(_vctrl->dir) != 0)
-        perror("Could not remove .vctrl");
-      if (rename(_vctrl->dir2, _vctrl->dir) != 0)
-        perror("Could not rename .vctrl.clone");
-    }
+    if (remove(_vctrl->dirclone) != 0)
+      perror("Could not remove .vctrl.clone");
   }
+  else if (code == M_SUCCESS)
+  {
+    if (remove(_vctrl->dir) != 0)
+      perror("Could not remove .vctrl");
+    if (rename(_vctrl->dirclone, _vctrl->dir) != 0)
+      perror("Could not rename .vctrl.clone");
+  }
+
   m_free(_vctrl->dir);
-  m_free(_vctrl->dir2);
+  m_free(_vctrl->dirclone);
   return 0;
 }
 
-static int init_pkg_con_data(struct vctrl_pkg_con_data *result)
-{
-  result->con_func_result = 0;
-  result->write_func_result = 0;
-  return 0;
-}
-
-int vctrl_pkg_con(struct vctrl_pkg_con_data *result, struct vctrl *_vctrl,
+int vctrl_pkg_con(struct vctrl *_vctrl,
                   char *pkg, void *ud,
-                  vctrl_func con_func, vctrl_con con)
+                  vctrl_func func)
 {
-  init_pkg_con_data(result);
-  while (fgets(_vctrl->line, sizeof(_vctrl->line), _vctrl->file))
-  {
-    if (con(_vctrl, _vctrl->line, pkg, ud) == 0)
-    {
-      if (con_func != NULL &&
-          (result->con_func_result = con_func(_vctrl, pkg, ud)) == 1)
-        break;
-    }
-  }
-  return 0;
+  int result = M_FAIL;
+  _vctrl->pkg_con = M_SUCCESS;
+  while (fgets(_vctrl->line, sizeof(_vctrl->line), _vctrl->file) &&
+         _vctrl->pkg_con == M_SUCCESS)
+    result = func(_vctrl, pkg, ud);
+  return result;
 }

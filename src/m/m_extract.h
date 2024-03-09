@@ -9,6 +9,6 @@
 #ifndef M_EXTRACT_H_
 #define M_EXTRACT_H_
 
-int extract(const char *name, const char *path);
+int m_extract(const char *name, const char *path);
 
 #endif

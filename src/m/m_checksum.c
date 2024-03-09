@@ -12,7 +12,7 @@
 #include <sha256.h>
 #include "m_debug.h"
 #include <string.h>
-#include "m_vctrl.h"
+#include "../mopm.h"
 
 char *get_checksum(const char *filename)
 {
@@ -45,21 +45,20 @@ struct checksum_data
   const char *checksum;
 };
 
-static int condition_func(struct vctrl *_vctrl, char *pkg, void *ud)
+static int condition(struct vctrl *_vctrl, char *pkg, void *ud)
 {
-  struct checksum_data *cd = ud;
-  char *bin_checksum = get_checksum(cd->bin_dir);
-  int result = (bin_checksum != NULL && strcmp(bin_checksum, cd->checksum) == 0) ? 1 : 0;
-  m_free(bin_checksum);
-  return result;
-}
-
-static int condition(struct vctrl *_vctrl, char *line, char *pkg, void *ud)
-{
-  int result;
   char *pkg_n;
+  struct checksum_data *cd = ud;
+  int result = M_FAIL;
   asprintf(&pkg_n, "%s\n", pkg);
-  result = (strcmp(line, pkg) == 0 || strcmp(line, pkg_n) == 0) ? 0 : 1;
+  if (strcmp(_vctrl->line, pkg) == 0 || strcmp(_vctrl->line, pkg_n) == 0)
+  {
+    char *bin_checksum = get_checksum(cd->bin_dir);
+    result = (bin_checksum != NULL &&
+              strcmp(bin_checksum, cd->checksum) == 0) ? M_SUCCESS : M_FAIL;
+    m_free(bin_checksum);
+    _vctrl->pkg_con = M_FAIL;
+  }
   m_free(pkg_n);
   return result;
 }
@@ -67,11 +66,9 @@ static int condition(struct vctrl *_vctrl, char *line, char *pkg, void *ud)
 int verify_checksum(struct vctrl *_vctrl, char *bin_dir, char *pkg,
                     const char *checksum)
 {
-  struct vctrl_pkg_con_data result;
   char line[133];
   struct checksum_data cd;
   cd.bin_dir = bin_dir;
   cd.checksum = checksum;
-  vctrl_pkg_con(&result, _vctrl, pkg, &cd, &condition_func, &condition);
-  return result.con_func_result;
+  return vctrl_pkg_con(_vctrl, pkg, &cd, &condition);
 }

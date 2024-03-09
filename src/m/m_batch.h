@@ -9,7 +9,8 @@
 #ifndef M_BATCH_
 #define M_BATCH_
 
-char *exe_to_bat(const char *entry);
-int create_batch(const char *pkg_name, const char *pkg_dir, const char *entry);
+struct mo_program;
+
+int m_create_batch(struct mo_program *mo);
 
 #endif

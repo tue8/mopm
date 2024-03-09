@@ -84,9 +84,9 @@ char *d_get_str_after_char(const char *_str, int _char, const char *file, const 
 
   str = _get_str_after_char(_str, _char);
   if (str == NULL)
-    printf("get_str_after_char() failed in %s, %i, %s\n", file, line, func);
+    printf("\nget_str_after_char() failed in %s, %i, %s\n", file, line, func);
   else
-    printf("get_str_after_char() succeeded in %s, %i, %s. p: %p\n", file, line, func, str);
+    printf("\nget_str_after_char() succeeded in %s, %i, %s. p: %p\n", file, line, func, str);
   return str;
 }
 
@@ -96,9 +96,9 @@ char *d_get_str_before_char(const char *_str, int _char, const char *file, const
 
   str = _get_str_before_char(_str, _char);
   if (str == NULL)
-    printf("get_str_before_char() failed in %s, %i, %s\n", file, line, func);
+    printf("\nget_str_before_char() failed in %s, %i, %s\n", file, line, func);
   else
-    printf("get_str_before_char() succeeded in %s, %i, %s. p: %p\n", file, line, func, str);
+    printf("\nget_str_before_char() succeeded in %s, %i, %s. p: %p\n", file, line, func, str);
   return str;
 }
 
@@ -111,9 +111,9 @@ int d_asprintf(const char *file, const int line, const char *func, char **strp, 
   retval = vasprintf(strp, format, args);
   va_end(args);
   if (retval == -1)
-    printf("d_asprintf() failed in %s, %i, %s\n", file, line, func);
+    printf("\nd_asprintf() failed in %s, %i, %s\n", file, line, func);
   else
-    printf("d_asprintf() succeeded in %s, %i, %s. p: %p\n", file, line, func, *strp);
+    printf("\nd_asprintf() succeeded in %s, %i, %s. p: %p\n", file, line, func, *strp);
   return retval;
 }
 
