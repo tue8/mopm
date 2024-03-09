@@ -9,92 +9,84 @@
 #include "m/m_init.h"
 #include "m/m_string.h"
 #include "m/m_curl.h"
-#include "m/m_vctrl.h"
-#include "m/m_find_package.h"
 #include "m/m_directory.h"
 #include "m/m_batch.h"
 #include "m/m_debug.h"
+#include "mopm.h"
 #include <stdio.h>
 
-static int vctrl_condition_func(struct vctrl *_vctrl, char *pkg, void *ud)
+static int vctrl_clone(struct vctrl *_vctrl, char *pkg_name, void *ud)
 {
-  fputs(_vctrl->line, _vctrl->file2);
-  return 0;
-}
+  char *l_pkg_name = get_str_before_char(_vctrl->line, '@');
+  char *l_pkg_version = get_str_after_char(_vctrl->line, '@');
+  char *pkg_name_n;
 
-static int vctrl_condition(struct vctrl *_vctrl, char *line, char *pkg, void *ud)
-{
-  char *l_pkg_name;
-  char *l_pkg_version;
-  int result = ((l_pkg_name = get_str_before_char(line, '@')) == NULL ||
-                (l_pkg_version = get_str_after_char(line, '@')) == NULL) ?
-                1 : (strcmp(l_pkg_name, pkg) == 0);
+  if (l_pkg_name != NULL && l_pkg_version != NULL &&
+      strcmp(l_pkg_name, pkg_name) != 0 &&
+      strcmp(l_pkg_name, pkg_name_n) != 0)
+    fputs(_vctrl->line, _vctrl->fclone);
+
   m_free(l_pkg_name);
   m_free(l_pkg_version);
-  return result;
+  m_free(pkg_name_n);
+  return M_SUCCESS;
 }
 
-static int vctrl_remove_pkg(struct vctrl *_vctrl, char *pkg)
+static void cleanup(struct mo_program *mo, int code)
 {
-  struct vctrl_pkg_con_data result;
-
-  vctrl_pkg_con(&result, _vctrl, pkg, NULL,
-                &vctrl_condition_func, &vctrl_condition);
-  return 0;
+  m_free(mo->pkg);
+  m_free(mo->pkg_dir);
+  json_decref(mo->fpd.json_root);
+  vctrl_cleanup(&mo->_vctrl, code);
+  printf((code == M_SUCCESS) ? "Successfully uninstalled package."
+                             : "Failed to uninstall package.");
+  exit(code);
 }
 
 int main(int argc, char *argv[])
 {
-  CURL *curl_handle;
-  struct vctrl _vctrl;
-  char *pkg_dir;
-  char *batch_dir;
-  char *pkg;
-  int success;
-  int remove_success;
-  struct find_package_data fpd;
+  struct mo_program mo;
 
   if (m_init(argc, "uninstall") == 1)
-    return 1;
+    return M_FAIL;
+
   curl_global_init(CURL_GLOBAL_ALL);
-  curl_handle = curl_easy_init();
-  if (curl_handle == NULL)
+  mo.curl_handle = curl_easy_init();
+  if (mo.curl_handle == NULL)
   {
     fprintf(stderr, "Could not initialize curl\n");
-    return 1;
+    return M_FAIL;
   }
-  pkg = m_strdup(argv[1]);
-  if (m_init_uninstall(&_vctrl, pkg) == 1)
+
+  /*
+  * pkg here is technically pkg_name since
+  * we cant specify a version to uninstall
+  * with mo-remove
+  */
+  mo.pkg = m_strdup(argv[1]);
+  if (m_init_uninstall(&mo) == 1)
   {
-    curl_easy_cleanup(curl_handle);
+    curl_easy_cleanup(mo.curl_handle);
     curl_global_cleanup();
-    return 1;
+    return M_FAIL;
   }
-  asprintf(&pkg_dir, "%s\\mopm\\%s", getenv("APPDATA"), pkg);
-  find_package(&fpd, curl_handle, pkg, pkg, NULL);
-  if (check_fpd(&fpd) == 1)
-    goto out;
-  success = 0;
-  asprintf(&batch_dir, "%s\\..\\%s.bat", pkg_dir, pkg);
-  remove_success = remove(batch_dir);
-  m_free(batch_dir);
-  if (remove_success != 0)
-  {
-    perror("Could not remove package's batch file");
-    goto out;
-  }
-  if (remove_directory(pkg_dir) == 1 || file_size(_vctrl.file) == 0)
-    goto out;
-  vctrl_remove_pkg(&_vctrl, pkg);
-  success = 1;
-out:
-  m_free(pkg);
-  m_free(pkg_dir);
-  free_fpd(&fpd);
-  vctrl_cleanup(&_vctrl, success);
-  if (success == 1)
-    printf("Successfully uninstalled package.");
-  else
-    printf("Failed to uninstall package.");
-  return success == 0;
+
+  asprintf(&mo.pkg_dir, "%s\\mopm\\%s", getenv("APPDATA"), mo.pkg);
+
+  /***/
+  mo.pkg_name = mo.pkg;
+  if (m_find_package(&mo) == M_FAIL)
+    cleanup(&mo, M_FAIL);
+
+  asprintf(&mo.batch_dir, "%s\\..\\%s.bat", mo.pkg_dir, mo.pkg);
+
+  int remove_success = remove(mo.batch_dir);
+  m_free(mo.batch_dir);
+  M_ASSERT(remove_success != 0, "Could not remove package's batch file");
+
+  if (remove_directory(mo.pkg_dir) == 1 || file_size(mo._vctrl.file) == 0)
+    cleanup(&mo, M_FAIL);
+
+  vctrl_pkg_con(&mo._vctrl, mo.pkg, NULL, &vctrl_clone);
+  cleanup(&mo, M_SUCCESS);
 }

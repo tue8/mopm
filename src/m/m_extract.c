@@ -35,7 +35,7 @@ static int copy_data(struct archive *ar, struct archive *aw)
   }
 }
 
-int extract(const char *name, const char *path)
+int m_extract(const char *name, const char *path)
 {
   struct archive *a;
   struct archive *ext;

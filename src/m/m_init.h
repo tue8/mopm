@@ -10,10 +10,10 @@
 #define M_INIT_H
 
 #include <curl/curl.h>
-struct vctrl;
+struct mo_program;
 
 int m_init(int argc, char *cmd);
-int m_init_install(struct vctrl *_vctrl, char *pkg, char **pkg_name, char **pkg_version);
-int m_init_uninstall(struct vctrl *_vctrl, char *pkg);
+int m_init_install(struct mo_program *mo);
+int m_init_uninstall(struct mo_program *mo);
 
 #endif

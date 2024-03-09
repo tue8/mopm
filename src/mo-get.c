@@ -8,179 +8,159 @@
 
 #include "m/m_init.h"
 #include "m/m_string.h"
-#include "m/m_curl.h"
-#include "m/m_vctrl.h"
-#include "m/m_find_package.h"
 #include "m/m_directory.h"
 #include "m/m_validate_package.h"
 #include "m/m_extract.h"
 #include "m/m_batch.h"
 #include "m/m_debug.h"
+#include "mopm.h"
 #include <stdio.h>
 
-static int print_package_info(char *name, char *ver, const char *fpd_ver,
-                              const char *des, const char *license,
-                              const char *author)
+static int print_package_info(struct mo_program *mo)
 {
   printf("Found: %s Version %s\n"
          "Description: %s\n"
          "License: %s\n"
          "Author: %s\n",
-         name, (ver == NULL) ? fpd_ver : ver, des, license, author);
+         mo->pkg_name, mo->pkg_version, mo->fpd.des,
+         mo->fpd.license, mo->fpd.author);
 }
 
-static int vctrl_condition_func(struct vctrl *_vctrl, char *pkg, void *ud)
-{
-  fputs(_vctrl->line, _vctrl->file2);
-  return 0;
-}
 
-static int vctrl_condition(struct vctrl *_vctrl, char *line, char *pkg, void *ud)
+static int vctrl_clone(struct vctrl *_vctrl, char *pkg, void *ud)
 {
-  char *l_pkg_name;
-  char *l_pkg_version;
-  char *pkg_name;
-  char *pkg_version;
-  int result;
-  int name_result;
-  int version_result;
+/*
+* if all pkg vctrls are valid        -> pkg_valid -> true
+* if even one pkg vctrl is corrupted -> pkg_valid -> false
+*/
+  int pkg_valid = M_FAIL;
+  char *l_pkg_name = get_str_before_char(_vctrl->line, '@');
+  char *l_pkg_version  = get_str_after_char(_vctrl->line, '@');
+  char *pkg_name = get_str_before_char(pkg, '@');
+  char *pkg_name_n;
 
-  result = 0;
-  if ((l_pkg_name = get_str_before_char(line, '@')) == NULL ||
-      (l_pkg_version = get_str_after_char(line, '@')) == NULL)
-    result = 1;
-  else
+  asprintf(&pkg_name_n, "%s\n", pkg);
+  if (l_pkg_name != NULL && l_pkg_version != NULL)
   {
-    name_result = strcmp(l_pkg_name,
-                         (pkg_name = get_str_before_char(pkg, '@')));
-    version_result = strcmp(l_pkg_version,
-                            (pkg_version = get_str_after_char(pkg, '@')));
-    l_pkg_version[strlen(l_pkg_version) - 1] = '\0';
-    if (name_result == 0 && version_result == 0)
-      *(int *)ud = 1;
-    else if (name_result == 0 && version_result != 0)
-      result = 1;
+    pkg_valid = M_SUCCESS;
+    if (strcmp(l_pkg_name, pkg_name) != 0 &&
+        strcmp(l_pkg_name, pkg_name_n) != 0)
+      fputs(_vctrl->line, _vctrl->fclone);
   }
+
   m_free(l_pkg_name);
   m_free(l_pkg_version);
   m_free(pkg_name);
-  m_free(pkg_version);
-  return result;
+  return pkg_valid;
 }
 
-static int vctrl_print_pkg(struct vctrl *_vctrl, char *pkg)
+/*
+* loop over vctrl
+* if pkg's legit in vctrl, copy to vctrl clone 
+* end loop
+* add new pkg to vctrl clone
+*/
+static int m_vctrl_add_pkg(struct vctrl *_vctrl, char *pkg)
 {
-  struct vctrl_pkg_con_data result;
-  int exist;
-  char last_c;
+  if (vctrl_pkg_con(_vctrl, pkg, NULL, &vctrl_clone) == M_FAIL)
+    return M_FAIL;
 
-  exist = 0;
-  vctrl_pkg_con(&result, _vctrl, pkg, &exist,
-                &vctrl_condition_func, &vctrl_condition);
-  if (exist != 1)
+  if (file_size(_vctrl->fclone) == 0)
+    fprintf(_vctrl->fclone, pkg);
+  else
   {
-    if (file_size(_vctrl->file2) == 0)
-      fprintf(_vctrl->file2, pkg);
+    if (fseek(_vctrl->fclone, -2, SEEK_END) != 0)
+      return M_FAIL;
+
+    char last_c = fgetc(_vctrl->fclone);
+
+    if (fseek(_vctrl->fclone, 0L, SEEK_END) != 0)
+      return M_FAIL;
+
+    if (last_c == '\n')
+      fprintf(_vctrl->fclone, pkg);
     else
-    {
-      if (fseek(_vctrl->file2, -2, SEEK_END) != 0)
-        return 1;
-      last_c = fgetc(_vctrl->file2);
-      if (fseek(_vctrl->file2, 0L, SEEK_END) != 0)
-        return 1;
-      if (last_c == '\n')
-        fprintf(_vctrl->file2, pkg);
-      else
-        fprintf(_vctrl->file2, "\n%s", pkg);
-    }
+      fprintf(_vctrl->fclone, "\n%s", pkg);
   }
-  return 0;
+  return M_SUCCESS;
+}
+
+static void cleanup(struct mo_program *mo, int code)
+{
+  m_free(mo->pkg);
+  m_free(mo->pkg_name);
+  m_free(mo->pkg_version);
+  m_free(mo->bin_dir);
+  m_free(mo->pkg_dir);
+  json_decref(mo->fpd.json_root);
+  curl_easy_cleanup(mo->curl_handle);
+  vctrl_cleanup(&mo->_vctrl, code);
+  curl_global_cleanup();
+  printf((code == M_SUCCESS) ? "Successfully installed package."
+                             : "Failed to install package.");
+  exit(code);
 }
 
 int main(int argc, char *argv[])
 {
-  CURL *curl_handle;
-  char *pkg_name;
-  char *pkg_version;
-  struct vctrl _vctrl;
-  char *pkg_dir;
-  char *bin_dir;
-  char *pkg;
-  int success;
-  struct find_package_data fpd;
+  struct mo_program mo;
+  int fpd_res;
 
-  if (m_init(argc, "install") == 1)
-    return 1;
+  /* init program */
+  if (m_init(argc, "install") == M_FAIL)
+    return M_FAIL;
+
   curl_global_init(CURL_GLOBAL_ALL);
-  curl_handle = curl_easy_init();
-  if (curl_handle == NULL)
+  mo.curl_handle = curl_easy_init();
+  ASSERT(mo.curl_handle == NULL, "Could not initialize curl\n");
+
+  mo.pkg = m_strdup(argv[1]);
+  if (m_init_install(&mo) == M_FAIL)
   {
-    fprintf(stderr, "Could not initialize curl\n");
-    return 1;
-  }
-  pkg = m_strdup(argv[1]);
-  if (m_init_install(&_vctrl, pkg, &pkg_name, &pkg_version) == 1)
-  {
-    curl_easy_cleanup(curl_handle);
+    curl_easy_cleanup(mo.curl_handle);
     curl_global_cleanup();
-    return 1;
+    return M_FAIL;
   }
-  asprintf(&pkg_dir, "%s\\mopm\\%s", getenv("APPDATA"), pkg_name);
-  asprintf(&bin_dir, "%s\\%s.zip", pkg_dir, pkg_name);
-  success = 0;
-  find_package(&fpd, curl_handle, pkg, pkg_name, pkg_version);
-  if (check_fpd(&fpd) == 1)
-    goto out;
-  create_directory(pkg_dir);
-  if (validate_package(&_vctrl, &fpd, pkg_dir, pkg) == 1)
-    goto out;
-  print_package_info(pkg_name, pkg_version, fpd.version, fpd.des, fpd.license, fpd.author);
-  if (pkg_version == NULL)
+
+  asprintf(&mo.pkg_dir, "%s\\mopm\\%s", getenv("APPDATA"), mo.pkg_name);
+  asprintf(&mo.bin_dir, "%s\\%s.zip", mo.pkg_dir, mo.pkg_name);
+
+  /* retrieve info */
+  if (m_find_package(&mo) == M_FAIL)
+    cleanup(&mo, M_FAIL);
+  
+  if (mo.pkg_version == NULL)
   {
-    m_free(pkg);
-    asprintf(&pkg, "%s@%s", pkg_name, fpd.version);
+    mo.pkg_version = m_strdup(mo.fpd.version);
+    m_free(mo.pkg);
+    asprintf(&(mo.pkg), "%s@%s", mo.pkg_name, mo.pkg_version);
   }
+  
+  create_directory(mo.pkg_dir);
+  
+  if (m_validate_package(&mo) == M_FAIL)
+    cleanup(&mo, M_FAIL);
+  
+  print_package_info(&mo);
+  
+  /* download */
   printf("Downloading package...\n");
-  if (download_to_file(curl_handle, fpd.bin_url, bin_dir) != CURLE_OK)
-  {
-    fprintf(stderr, "Could not download package\n");
-    remove(bin_dir);
-    goto out;
-  }
+  M_ASSERT(download_to_file(&mo) != CURLE_OK &&
+          /* i couldnt care less */
+          (remove(mo.bin_dir) == 0 || remove(mo.bin_dir) == -1),
+           "Could not download package\n");
+
   printf("Successfully downloaded package\n"
          "Extracting...\n");
-  if (extract(bin_dir, pkg_dir) == 0)
-    printf("Successfully extracted package\n");
-  else
-  {
-    fprintf(stderr, "Failed to extract package\n");
-    goto out;
-  }
-  if (create_batch(pkg_name, pkg_dir, fpd.entry) != 0)
-  {
-    fprintf(stderr, "Failed to create batch file\n");
-    goto out;
-  }
-  if (file_size(_vctrl.file) == 0)
-    fprintf(_vctrl.file2, pkg);
-  else
-  {
-    if (vctrl_print_pkg(&_vctrl, pkg) != 0)
-      fprintf(stderr, "Failed to edit .vctrl\n");
-  }
-  success = 1;
-out:
-  m_free(pkg);
-  m_free(pkg_name);
-  if (pkg_version != NULL)
-    m_free(pkg_version);
-  m_free(bin_dir);
-  m_free(pkg_dir);
-  free_fpd(&fpd);
-  vctrl_cleanup(&_vctrl, success);
-  curl_easy_cleanup(curl_handle);
-  curl_global_cleanup();
-  printf((success == 1) ? "Successfully installed package."
-                        : "Failed to install package.");
-  return success == 0;
+
+  /* install */
+  M_ASSERT(m_extract(mo.bin_dir, mo.pkg_dir) == M_FAIL, "Failed to extract package\n");
+  printf("Successfully extracted package\n");
+  M_ASSERT(m_create_batch(&mo) != M_SUCCESS, "Failed to create batch file\n");
+
+  if (file_size(mo._vctrl.file) == 0)
+    fprintf(mo._vctrl.fclone, mo.pkg);
+  else if (m_vctrl_add_pkg(&(mo._vctrl), mo.pkg) != M_SUCCESS)
+    fprintf(stderr, "Failed to add pkg to .vctrl\n");
+  cleanup(&mo, M_SUCCESS);
 }

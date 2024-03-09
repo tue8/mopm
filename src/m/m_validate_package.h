@@ -9,10 +9,8 @@
 #ifndef M_VALIDATE_PACKAGE_H_
 #define M_VALIDATE_PACKAGE_H_
 
-struct vctrl;
-struct find_package_data;
+struct mo_program;
 
-int validate_package(struct vctrl *_vctrl, struct find_package_data *fpd,
-                     const char *pkg_dir, char *pkg);
+int m_validate_package(struct mo_program *mo);
 
 #endif

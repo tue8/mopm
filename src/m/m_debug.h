@@ -11,6 +11,10 @@
 
 #include <stdlib.h>
 
+#define M_ASSERT(stm, msg) if (stm) { fprintf(stderr, msg); cleanup(&mo, M_FAIL); }
+#define ASSERT(stm, msg) if (stm) { fprintf(stderr, msg); return M_FAIL; }
+
+
 #ifdef _DEBUG
 #define m_malloc(x) _m_malloc(x, __FILE__, __LINE__, __FUNCTION__)
 #define m_free(x) _m_free(x, __FILE__, __LINE__, __FUNCTION__)

@@ -12,13 +12,9 @@
 #include <windows.h>
 #include "m_debug.h"
 
-#define create_directory(path)                                                 \
-  if (CreateDirectory(path, NULL) == 0                                         \
-  && GetLastError() != 183L) /* ERROR_ALREADY_EXISTS */                        \
-  {                                                                            \
-    fprintf(stderr, "Could not create " #path "\n");                           \
-    goto out;                                                                  \
-  }
+#define create_directory(path)\
+ASSERT(CreateDirectory(path, NULL) == 0 && GetLastError() != 183L, "Could not create " #path "\n");\
+\
 
 char *get_current_directory();
 int remove_directory(char *path);

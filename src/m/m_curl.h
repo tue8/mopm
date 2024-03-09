@@ -17,7 +17,9 @@ struct get_res
   size_t len;
 };
 
-int send_http_get(CURL *curl_handle, const char *url, struct get_res *res);
-int download_to_file(CURL *curl_handle, const char *url, char *file_dir);
+struct mo_program;
+
+int send_http_get(CURL *curl_handle, char *url, struct get_res *res);
+int download_to_file(struct mo_program *mo);
 
 #endif

@@ -15,13 +15,12 @@
 struct find_package_data
 {
   json_t *json_root;
-  int result;
   const char *entry, *version, *des, *author, *license, *checksum, *bin_url;
 };
 
-int free_fpd(struct find_package_data *fpd);
-int check_fpd(struct find_package_data *fpd);
-int find_package(struct find_package_data *ret_data, CURL *curl_handle,
-                 char *pkg, char *pkg_name, char *pkg_version);
+struct mo_program;
+
+int m_free_fpd(struct find_package_data *fpd, int code);
+int m_find_package(struct mo_program *mo);
 
 #endif

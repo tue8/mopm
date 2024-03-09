@@ -9,6 +9,7 @@
 #include "m_curl.h"
 #include "m_string.h"
 #include "m_debug.h"
+#include "../mopm.h"
 #include <string.h>
 
 #define PBLEN 40
@@ -40,18 +41,18 @@ static int progress_bar(curl_off_t curr, curl_off_t total)
 struct download_data
 {
   CURL *curl_handle;
-  curl_off_t totall;
-  curl_off_t currl;
+  curl_off_t total_len;
+  curl_off_t curr_len;
   FILE *file;
 };
 
 static size_t write_file(void *data, size_t size, size_t nmemb, struct download_data *dd)
 {
   size_t written = fwrite(data, size, nmemb, dd->file);
-  dd->currl += written;
-  if (dd->totall == 0)
-    curl_easy_getinfo(dd->curl_handle, CURLINFO_CONTENT_LENGTH_DOWNLOAD_T, &dd->totall);
-  progress_bar(dd->currl, dd->totall);
+  dd->curr_len += written;
+  if (dd->total_len == 0)
+    curl_easy_getinfo(dd->curl_handle, CURLINFO_CONTENT_LENGTH_DOWNLOAD_T, &dd->total_len);
+  progress_bar(dd->curr_len, dd->total_len);
   return written;
 }
 
@@ -84,7 +85,7 @@ static int init_curl_handler(CURL *curl_handle, const char *url)
   return 0;
 }
 
-int send_http_get(CURL *curl_handle, const char *url, struct get_res *res)
+int send_http_get(CURL *curl_handle, char *url, struct get_res *res)
 {
   CURLcode perform_res;
   curl_off_t size;
@@ -109,19 +110,19 @@ int send_http_get(CURL *curl_handle, const char *url, struct get_res *res)
   return 0;
 }
 
-int download_to_file(CURL *curl_handle, const char *url, char *file_dir)
+int download_to_file(struct mo_program *mo)
 {
   CURLcode perform_res;
   struct download_data dd;
 
-  init_curl_handler(curl_handle, url);
+  init_curl_handler(mo->curl_handle, mo->fpd.bin_url);
 
-  curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_file);
+  curl_easy_setopt(mo->curl_handle, CURLOPT_WRITEFUNCTION, write_file);
 
-  dd.totall = 0;
-  dd.currl = 0;
-  dd.curl_handle = curl_handle;
-  dd.file = fopen(file_dir, "wb");
+  dd.total_len = 0;
+  dd.curr_len = 0;
+  dd.curl_handle = mo->curl_handle;
+  dd.file = fopen(mo->bin_dir, "wb");
 
   if (dd.file == NULL)
   {
@@ -129,11 +130,11 @@ int download_to_file(CURL *curl_handle, const char *url, char *file_dir)
     return -1;
   }
 
-  curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &dd);
-  perform_res = curl_easy_perform(curl_handle);
+  curl_easy_setopt(mo->curl_handle, CURLOPT_WRITEDATA, &dd);
+  perform_res = curl_easy_perform(mo->curl_handle);
   printf("\n");
 
   fclose(dd.file);
-  curl_easy_reset(curl_handle);
+  curl_easy_reset(mo->curl_handle);
   return perform_res;
 }

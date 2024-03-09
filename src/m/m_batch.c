@@ -11,6 +11,7 @@
 #include "m_string.h"
 #include <string.h>
 #include "m_debug.h"
+#include "../mopm.h"
 
 const char *batch_template = "@ECHO OFF\n"
                              "IF EXIST %s (\n"
@@ -19,24 +20,26 @@ const char *batch_template = "@ECHO OFF\n"
                              "  echo Could not find package's entry: %s\n"
                              ")";
 
-int create_batch(const char *pkg_name, const char *pkg_dir, const char *entry)
+int m_create_batch(struct mo_program *mo)
 {
-  int result;
   char *entry_dir;
   char *batch_dir;
   FILE *batch_f;
 
-  result = 1;
-  asprintf(&entry_dir, "%s\\%s", pkg_dir, entry);
-  asprintf(&batch_dir, "%s\\..\\%s.bat", pkg_dir, pkg_name);
+  asprintf(&entry_dir, "%s\\%s", mo->pkg_dir, mo->fpd.entry);
+  asprintf(&batch_dir, "%s\\..\\%s.bat", mo->pkg_dir, mo->pkg_name);
   batch_f = fopen(batch_dir, "w");
   if (batch_f == NULL)
-    goto out;
+  {
+    m_free(entry_dir);
+    m_free(batch_dir);
+    return M_FAIL;
+  }
+
   fprintf(batch_f, batch_template, entry_dir, entry_dir, entry_dir);
   fclose(batch_f);
-  result = 0;
-out:
+
   m_free(entry_dir);
   m_free(batch_dir);
-  return result;
+  return M_SUCCESS;
 }
