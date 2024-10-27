@@ -1,6 +1,6 @@
 SRC=$(wildcard src/*.c)
 ASRC=$(wildcard include/*.c include/*/*.c src/*/*.c)
-CFLAGS=-I include -L lib -l curl -l jansson -l archive.dll -static -static-libgcc
+CFLAGS=-I include -L lib -l curl -l jansson -l archive.dll
 BINS=mopm mo-get mo-remove
 
 all: $(BINS)
