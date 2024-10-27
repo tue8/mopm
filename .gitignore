@@ -3,3 +3,4 @@ bin/*.exe
 exports/
 *.bat
 TODO.txt
+.vs/
