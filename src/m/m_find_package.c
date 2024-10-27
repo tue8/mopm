@@ -18,8 +18,7 @@
 #define FP_NOT_FOUND_ERR 1
 #define FP_MANIFEST_ERR 2
 
-char *manifest_origin_url = "https://raw.githubusercontent.com/Localtings/"
-                            "mopm-pkgs/main/packages/%s/manifest.json";
+char *manifest_origin_url = "https://server.cyberpho.be/mopm-packages/%s/manifest.json";
 
 static int fp_fail(struct mo_program *mo, int code)
 {
