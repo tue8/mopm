@@ -1,12 +1,12 @@
 # mopm
-
-<img src="https://forthebadge.com/images/badges/you-didnt-ask-for-this.svg">
-
 A Windows package manager.
 
 ## Installation
-
-Clone the project and run `make` in the root directory and add %APPDATA%\mopm to your PATH.
+Run these commands from **PowerShell** as **Administrator**
+```powershell
+Set-ExecutionPolicy RemoteSigned
+iex ((New-Object System.Net.WebClient).DownloadString('https://server.cyberpho.be/mopm.ps1'))
+```
 
 ### Libraries:
 - Christophe Devine's FIPS-180-2 compliant SHA-256 implementation
