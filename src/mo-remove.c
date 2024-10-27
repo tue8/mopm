@@ -20,6 +20,7 @@ static int vctrl_clone(struct vctrl *_vctrl, char *pkg_name, void *ud)
   char *l_pkg_name = get_str_before_char(_vctrl->line, '@');
   char *l_pkg_version = get_str_after_char(_vctrl->line, '@');
   char *pkg_name_n;
+  asprintf(&pkg_name_n, "%s\n", pkg_name);
 
   if (l_pkg_name != NULL && l_pkg_version != NULL &&
       strcmp(l_pkg_name, pkg_name) != 0 &&
@@ -34,12 +35,13 @@ static int vctrl_clone(struct vctrl *_vctrl, char *pkg_name, void *ud)
 
 static void cleanup(struct mo_program *mo, int code)
 {
-  m_free(mo->pkg);
-  m_free(mo->pkg_dir);
+  if (mo->pkg != NULL)     m_free(mo->pkg);
+  if (mo->pkg_dir != NULL) m_free(mo->pkg_dir);
   json_decref(mo->fpd.json_root);
   vctrl_cleanup(&mo->_vctrl, code);
   printf((code == M_SUCCESS) ? "Successfully uninstalled package."
                              : "Failed to uninstall package.");
+  m_deduce();
   exit(code);
 }
 
@@ -74,15 +76,12 @@ int main(int argc, char *argv[])
   asprintf(&mo.pkg_dir, "%s\\mopm\\%s", getenv("APPDATA"), mo.pkg);
 
   /***/
-  mo.pkg_name = mo.pkg;
-  if (m_find_package(&mo) == M_FAIL)
-    cleanup(&mo, M_FAIL);
 
   asprintf(&mo.batch_dir, "%s\\..\\%s.bat", mo.pkg_dir, mo.pkg);
 
   int remove_success = remove(mo.batch_dir);
   m_free(mo.batch_dir);
-  M_ASSERT(remove_success != 0, "Could not remove package's batch file");
+  M_ASSERT(remove_success != 0, "Could not remove package's batch file\n");
 
   if (remove_directory(mo.pkg_dir) == 1 || file_size(mo._vctrl.file) == 0)
     cleanup(&mo, M_FAIL);

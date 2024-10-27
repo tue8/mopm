@@ -1,0 +1,241 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\mo-remove.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\mo-remove.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\mo-get.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\mo-get.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\m\\m_string.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\m\\m_string.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\m\\m_string.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\m\\m_string.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\m\\m_debug.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\m\\m_debug.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\m\\m_debug.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\m\\m_debug.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\m\\m_curl.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\m\\m_curl.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\Makefile||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Makefile||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\m\\m_find_package.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\m\\m_find_package.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\m\\m_directory.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\m\\m_directory.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\m\\m_extract.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\m\\m_extract.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\m\\m_find_package.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\m\\m_find_package.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\m\\m_validate_package.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\m\\m_validate_package.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 5,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "m_string.h",
+              "DocumentMoniker": "C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\m\\m_string.h",
+              "RelativeDocumentMoniker": "src\\m\\m_string.h",
+              "ToolTip": "C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\m\\m_string.h",
+              "RelativeToolTip": "src\\m\\m_string.h",
+              "ViewState": "AgIAAAwAAAAAAAAAAAArwBoAAAAUAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2024-10-27T04:42:18.42Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "m_string.c",
+              "DocumentMoniker": "C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\m\\m_string.c",
+              "RelativeDocumentMoniker": "src\\m\\m_string.c",
+              "ToolTip": "C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\m\\m_string.c",
+              "RelativeToolTip": "src\\m\\m_string.c",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFUAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
+              "WhenOpened": "2024-10-27T04:42:25.227Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "m_debug.c",
+              "DocumentMoniker": "C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\m\\m_debug.c",
+              "RelativeDocumentMoniker": "src\\m\\m_debug.c",
+              "ToolTip": "C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\m\\m_debug.c",
+              "RelativeToolTip": "src\\m\\m_debug.c",
+              "ViewState": "AgIAABkAAAAAAAAAAAArwCkAAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
+              "WhenOpened": "2024-10-27T04:36:10.016Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Makefile",
+              "DocumentMoniker": "C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\Makefile",
+              "RelativeDocumentMoniker": "Makefile",
+              "ToolTip": "C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\Makefile",
+              "RelativeToolTip": "Makefile",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAeAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2024-10-27T04:30:24.496Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "m_find_package.c",
+              "DocumentMoniker": "C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\m\\m_find_package.c",
+              "RelativeDocumentMoniker": "src\\m\\m_find_package.c",
+              "ToolTip": "C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\m\\m_find_package.c",
+              "RelativeToolTip": "src\\m\\m_find_package.c",
+              "ViewState": "AgIAAA8AAAAAAAAAAAArwB0AAAAKAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
+              "WhenOpened": "2024-10-27T04:24:24.954Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "mo-remove.c",
+              "DocumentMoniker": "C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\mo-remove.c",
+              "RelativeDocumentMoniker": "src\\mo-remove.c",
+              "ToolTip": "C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\mo-remove.c",
+              "RelativeToolTip": "src\\mo-remove.c",
+              "ViewState": "AgIAAEUAAAAAAAAAAAAAAB4AAAAYAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
+              "WhenOpened": "2024-10-27T04:23:38.893Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "mo-get.c",
+              "DocumentMoniker": "C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\mo-get.c",
+              "RelativeDocumentMoniker": "src\\mo-get.c",
+              "ToolTip": "C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\mo-get.c",
+              "RelativeToolTip": "src\\mo-get.c",
+              "ViewState": "AgIAAB4AAAAAAAAAAAAAADEAAAADAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
+              "WhenOpened": "2024-10-27T04:19:44.118Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "m_curl.h",
+              "DocumentMoniker": "C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\m\\m_curl.h",
+              "RelativeDocumentMoniker": "src\\m\\m_curl.h",
+              "ToolTip": "C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\m\\m_curl.h",
+              "RelativeToolTip": "src\\m\\m_curl.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAAAUAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2024-10-27T04:21:38.756Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "m_debug.h",
+              "DocumentMoniker": "C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\m\\m_debug.h",
+              "RelativeDocumentMoniker": "src\\m\\m_debug.h",
+              "ToolTip": "C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\m\\m_debug.h",
+              "RelativeToolTip": "src\\m\\m_debug.h",
+              "ViewState": "AgIAAAwAAAAAAAAAAAAAABUAAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2024-10-27T04:21:36.667Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "m_directory.h",
+              "DocumentMoniker": "C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\m\\m_directory.h",
+              "RelativeDocumentMoniker": "src\\m\\m_directory.h",
+              "ToolTip": "C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\m\\m_directory.h",
+              "RelativeToolTip": "src\\m\\m_directory.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2024-10-27T04:21:33.916Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "m_extract.h",
+              "DocumentMoniker": "C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\m\\m_extract.h",
+              "RelativeDocumentMoniker": "src\\m\\m_extract.h",
+              "ToolTip": "C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\m\\m_extract.h",
+              "RelativeToolTip": "src\\m\\m_extract.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2024-10-27T04:21:32.149Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "m_find_package.h",
+              "DocumentMoniker": "C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\m\\m_find_package.h",
+              "RelativeDocumentMoniker": "src\\m\\m_find_package.h",
+              "ToolTip": "C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\m\\m_find_package.h",
+              "RelativeToolTip": "src\\m\\m_find_package.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2024-10-27T04:21:07.116Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "m_validate_package.h",
+              "DocumentMoniker": "C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\m\\m_validate_package.h",
+              "RelativeDocumentMoniker": "src\\m\\m_validate_package.h",
+              "ToolTip": "C:\\Users\\nguye\\source\\repos\\tue8\\mopm\\src\\m\\m_validate_package.h",
+              "RelativeToolTip": "src\\m\\m_validate_package.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2024-10-27T04:20:35.384Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

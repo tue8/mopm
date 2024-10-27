@@ -20,7 +20,6 @@ struct find_package_data
 
 struct mo_program;
 
-int m_free_fpd(struct find_package_data *fpd, int code);
 int m_find_package(struct mo_program *mo);
 
 #endif

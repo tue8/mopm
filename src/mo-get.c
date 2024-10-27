@@ -13,6 +13,7 @@
 #include "m/m_extract.h"
 #include "m/m_batch.h"
 #include "m/m_debug.h"
+#include "m/m_curl.h"
 #include "mopm.h"
 #include <stdio.h>
 
@@ -98,6 +99,7 @@ static void cleanup(struct mo_program *mo, int code)
   curl_global_cleanup();
   printf((code == M_SUCCESS) ? "Successfully installed package."
                              : "Failed to install package.");
+  m_deduce();
   exit(code);
 }
 
@@ -112,7 +114,7 @@ int main(int argc, char *argv[])
 
   curl_global_init(CURL_GLOBAL_ALL);
   mo.curl_handle = curl_easy_init();
-  ASSERT(mo.curl_handle == NULL, "Could not initialize curl\n");
+  M_ASSERT(mo.curl_handle == NULL, "Could not initialize curl\n");
 
   mo.pkg = m_strdup(argv[1]);
   if (m_init_install(&mo) == M_FAIL)
