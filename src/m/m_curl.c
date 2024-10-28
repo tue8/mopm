@@ -102,12 +102,13 @@ int send_http_get(CURL *curl_handle, char *url, struct get_res *res)
   res->ptr[0] = '\0';
 
   curl_easy_setopt(curl_handle, CURLOPT_HTTPGET, 1L);
+  curl_easy_setopt(curl_handle, CURLOPT_FAILONERROR, 1L);
   curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_get_res);
   curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, res);
 
   perform_res = curl_easy_perform(curl_handle);
   curl_easy_reset(curl_handle);
-  return 0;
+  return perform_res;
 }
 
 int download_to_file(struct mo_program *mo)

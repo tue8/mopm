@@ -96,7 +96,6 @@ int m_find_package(struct mo_program *mo)
   char *manifest_url;
   struct get_res manifest_raw;
   json_error_t err_buffer;
-  int http_code;
 
   printf("Searching for package...\n");
   asprintf(&manifest_url, manifest_origin_url, mo->pkg_name);
@@ -107,8 +106,7 @@ int m_find_package(struct mo_program *mo)
   mo->fpd.json_root = json_loads(manifest_raw.ptr, 0, &err_buffer);
   m_free(manifest_raw.ptr);
 
-  curl_easy_getinfo(mo->curl_handle, CURLINFO_RESPONSE_CODE, &http_code);
-  if (result != CURLE_OK || http_code != 404)
+  if (result != CURLE_OK)
     return fp_fail(mo, FP_NOT_FOUND_ERR);
   if (mo->fpd.json_root == 0 || json_is_object(mo->fpd.json_root) == 0)
     return fp_fail(mo, FP_MANIFEST_ERR);
