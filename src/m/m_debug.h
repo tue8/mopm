@@ -17,7 +17,7 @@
 
 #ifdef _DEBUG
 #define m_malloc(x) _m_malloc(x, __FILE__, __LINE__, __FUNCTION__)
-#define m_free(x) _m_free(x, __FILE__, __LINE__, __FUNCTION__)
+#define m_free(x) if (x) _m_free(x, __FILE__, __LINE__, __FUNCTION__)
 #define m_strdup(x) _m_strdup(x, __FILE__, __LINE__, __FUNCTION__)
 #define m_deduce() _m_deduce()
 #else

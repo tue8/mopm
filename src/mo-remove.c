@@ -35,8 +35,8 @@ static int vctrl_clone(struct vctrl *_vctrl, char *pkg_name, void *ud)
 
 static void cleanup(struct mo_program *mo, int code)
 {
-  if (mo->pkg != NULL)     m_free(mo->pkg);
-  if (mo->pkg_dir != NULL) m_free(mo->pkg_dir);
+  m_free(mo->pkg);
+  m_free(mo->pkg_dir);
   json_decref(mo->fpd.json_root);
   vctrl_cleanup(&mo->_vctrl, code);
   printf((code == M_SUCCESS) ? "Successfully uninstalled package."

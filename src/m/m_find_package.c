@@ -18,7 +18,17 @@
 #define FP_NOT_FOUND_ERR 1
 #define FP_MANIFEST_ERR 2
 
-char *manifest_origin_url = "https://server.cyberpho.be/mopm-packages/%s/manifest.json";
+const char *manifest_origin_url = "https://server.cyberpho.be/mopm-packages/%s/manifest.json";
+const char* http_err_msg =
+"<html>\n"
+"<head><title>404 Not Found</title></head>\n"
+"<body>\n"
+"<center><h1>404 Not Found</h1></center>\n"
+"<hr><center>nginx / 1.22.1</center>\n"
+"</body>\n"
+"</html>";
+
+
 
 static int fp_fail(struct mo_program *mo, int code)
 {
@@ -31,6 +41,7 @@ static int fp_fail(struct mo_program *mo, int code)
     fprintf(stderr, "Package's manifest error\n");
     break;
   }
+  return M_FAIL;
 }
 
 static int extract_json_fpd(struct mo_program *mo)
@@ -85,6 +96,7 @@ int m_find_package(struct mo_program *mo)
   char *manifest_url;
   struct get_res manifest_raw;
   json_error_t err_buffer;
+  int http_code;
 
   printf("Searching for package...\n");
   asprintf(&manifest_url, manifest_origin_url, mo->pkg_name);
@@ -95,7 +107,8 @@ int m_find_package(struct mo_program *mo)
   mo->fpd.json_root = json_loads(manifest_raw.ptr, 0, &err_buffer);
   m_free(manifest_raw.ptr);
 
-  if (result != CURLE_OK || strcmp(manifest_raw.ptr, "404: Not Found") == 0)
+  curl_easy_getinfo(mo->curl_handle, CURLINFO_RESPONSE_CODE, &http_code);
+  if (result != CURLE_OK || http_code != 404)
     return fp_fail(mo, FP_NOT_FOUND_ERR);
   if (mo->fpd.json_root == 0 || json_is_object(mo->fpd.json_root) == 0)
     return fp_fail(mo, FP_MANIFEST_ERR);
