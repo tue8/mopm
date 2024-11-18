@@ -14,7 +14,7 @@
 #include "m/m_cmd.h"
 #include "m/m_debug.h"
 
-#define MOPM_VERSION "0.3.0"
+#define MOPM_VERSION "0.3.5"
 
 const char *mopm_help = "mopm Version "MOPM_VERSION"\n"
                         "\nUsage: mopm <command> <argument>\n"
