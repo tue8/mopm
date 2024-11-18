@@ -127,10 +127,12 @@ int main(int argc, char *argv[])
   asprintf(&mo.pkg_dir, "%s\\mopm\\%s", getenv("APPDATA"), mo.pkg_name);
   asprintf(&mo.bin_dir, "%s\\%s.zip", mo.pkg_dir, mo.pkg_name);
 
+
+
   /* retrieve info */
   if (m_find_package(&mo) == M_FAIL)
     cleanup(&mo, M_FAIL);
-  
+
   if (mo.pkg_version == NULL)
   {
     mo.pkg_version = m_strdup(mo.fpd.version);
@@ -145,6 +147,7 @@ int main(int argc, char *argv[])
   
   print_package_info(&mo);
   
+
   /* download */
   printf("Downloading package...\n");
   M_ASSERT(download_to_file(&mo) != CURLE_OK &&
@@ -159,6 +162,7 @@ int main(int argc, char *argv[])
   M_ASSERT(m_extract(mo.bin_dir, mo.pkg_dir) == M_FAIL, "Failed to extract package\n");
   printf("Successfully extracted package\n");
   M_ASSERT(m_create_batch(&mo) != M_SUCCESS, "Failed to create batch file\n");
+
 
   if (file_size(mo._vctrl.file) == 0)
     fprintf(mo._vctrl.fclone, mo.pkg);
