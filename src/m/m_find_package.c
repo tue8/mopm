@@ -57,8 +57,8 @@ static int check_version_vctrl(struct mo_program* mo, const char* newest_version
       res = yes_no_prompt();
     }
 
-    free(pkg_name);
-    free(pkg_version);
+    m_free(pkg_name);
+    m_free(pkg_version);
   }
 
   return res;
