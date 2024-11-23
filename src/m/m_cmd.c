@@ -23,6 +23,12 @@ int get_cmd_info(struct cmd_info *info, char *cmd)
     info->usage = "<package name>";
     info->args = 1;
   }
+  else if (strcmp(cmd, "packages") == 0)
+  {
+    info->bin = "mo-packages";
+    info->usage = "";
+    info->args = 0;
+  }
   else
     return 1;
   return 0;

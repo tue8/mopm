@@ -14,13 +14,14 @@
 #include "m/m_cmd.h"
 #include "m/m_debug.h"
 
-#define MOPM_VERSION "0.3.5"
+#define MOPM_VERSION "0.3.7"
 
 const char *mopm_help = "mopm Version "MOPM_VERSION"\n"
                         "\nUsage: mopm <command> <argument>\n"
                         "To see the usage of a specific command, use: mopm <command>\n\n"
                         "Available commands: install\n"
-                        "                    uninstall\n";
+                        "                    uninstall\n"
+                        "                    packages\n";
 
 int main(int argc, char *argv[])
 {

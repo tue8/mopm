@@ -24,7 +24,7 @@ int m_validate_package(struct mo_program *mo)
     return M_SUCCESS;
   }
 
-  if (verify_checksum(&(mo->_vctrl), entry_dir, mo->pkg, mo->fpd.checksum) == M_SUCCESS)
+  if (verify_checksum(&mo->_vctrl, entry_dir, mo->pkg, mo->fpd.checksum) == M_SUCCESS)
   {
     fprintf(stderr, "Package is already installed\n");
     m_free(entry_dir);

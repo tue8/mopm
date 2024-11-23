@@ -15,7 +15,7 @@
 #include "mopm.h"
 #include <stdio.h>
 
-static int vctrl_clone(struct vctrl *_vctrl, char *pkg_name, void *ud)
+static int vctrl_clone(struct vctrl *_vctrl, char *pkg_name)
 {
   char *l_pkg_name = get_str_before_char(_vctrl->line, '@');
   char *l_pkg_version = get_str_after_char(_vctrl->line, '@');
@@ -86,6 +86,6 @@ int main(int argc, char *argv[])
   if (remove_directory(mo.pkg_dir) == 1 || file_size(mo._vctrl.file) == 0)
     cleanup(&mo, M_FAIL);
 
-  vctrl_pkg_con(&mo._vctrl, mo.pkg, NULL, &vctrl_clone);
+  vctrl_loop_over(&mo._vctrl, mo.pkg, &vctrl_clone);
   cleanup(&mo, M_SUCCESS);
 }

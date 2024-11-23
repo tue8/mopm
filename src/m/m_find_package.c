@@ -17,52 +17,10 @@
 #define FP_SUCCESS 0
 #define FP_NOT_FOUND_ERR 1
 #define FP_MANIFEST_ERR 2
-#define FP_NO_UPDATE 3
 
-const char *manifest_origin_url = "https://server.cyberpho.be/mopm-packages/%s/manifest.json";
+const char *manifest_origin_url = "https://server.cyberpho.be/mopm-packages/%s.json";
 
-static int yes_no_prompt()
-{
-  char r = getchar();
 
-  switch (r)
-  {
-  case 'Y':
-  case 'y':
-    return M_SUCCESS;
-  case 'N':
-  case 'n':
-    return M_FAIL;
-  default:
-    printf("Invalid input, enter again (y/n): ");
-    return yes_no_prompt();
-  }
-
-  return M_FAIL;
-}
-
-static int check_version_vctrl(struct mo_program* mo, const char* newest_version)
-{
-  int res = M_SUCCESS;
-
-  while (fgets(mo->_vctrl.line, sizeof(mo->_vctrl.line), mo->_vctrl.file))
-  {
-    char* pkg_name = get_str_before_char(mo->_vctrl.line, '@');
-    char* pkg_version = get_str_after_char(mo->_vctrl.line, '@');
-    if (strcmp(pkg_name, mo->pkg_name) == 0 &&
-      mo->pkg_version == NULL &&
-      strcmp(pkg_version, newest_version) != 0)
-    {
-      printf("New version available. Do you want to update? (y/n): ");
-      res = yes_no_prompt();
-    }
-
-    m_free(pkg_name);
-    m_free(pkg_version);
-  }
-
-  return res;
-}
 
 static int fp_fail(struct mo_program *mo, int code)
 {
@@ -73,9 +31,6 @@ static int fp_fail(struct mo_program *mo, int code)
     break;
   case FP_MANIFEST_ERR:
     fprintf(stderr, "Package's manifest error\n");
-    break;
-  case FP_NO_UPDATE:
-    fprintf(stderr, "Installation cancelled.\n");
     break;
   }
   return M_FAIL;
@@ -89,9 +44,6 @@ static int extract_json_fpd(struct mo_program *mo)
 
   if (json_is_string(newest_ver) == 0 || json_is_array(versions) == 0)
     return fp_fail(mo, FP_MANIFEST_ERR);
-  
-  if (check_version_vctrl(mo, json_string_value(newest_ver)) == M_FAIL)
-    return fp_fail(mo, FP_NO_UPDATE);
   
   for (i = 0; i < json_array_size(versions); i++)
   {

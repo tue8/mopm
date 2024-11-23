@@ -36,12 +36,9 @@ int vctrl_init(struct vctrl *_vctrl)
 
   if ((_vctrl->file = fopen(_vctrl->dir, "r")) == NULL)
   {
-    if ((_vctrl->file = fopen(_vctrl->dir, "w")) == NULL)
-    {
-      perror("Could not open .vctrl");
-      result = M_FAIL;
-      goto out;
-    }
+    perror("Could not open .vctrl");
+    result = M_FAIL;
+    goto out;
   }
 
   _vctrl->fclone = fopen(_vctrl->dirclone, "w+");
@@ -67,6 +64,7 @@ int vctrl_cleanup(struct vctrl *_vctrl, int code)
     if (remove(_vctrl->dirclone) != 0)
       perror("Could not remove .vctrl.clone");
   }
+  /* replace .vctrl with .vctrl.clone */
   else if (code == M_SUCCESS)
   {
     if (remove(_vctrl->dir) != 0)
@@ -80,14 +78,12 @@ int vctrl_cleanup(struct vctrl *_vctrl, int code)
   return 0;
 }
 
-int vctrl_pkg_con(struct vctrl *_vctrl,
-                  char *pkg, void *ud,
-                  vctrl_func func)
+int vctrl_loop_over(struct vctrl *_vctrl, char *pkg, vctrl_func func)
 {
   int result = M_FAIL;
-  _vctrl->pkg_con = M_SUCCESS;
-  while (fgets(_vctrl->line, sizeof(_vctrl->line), _vctrl->file) &&
-         _vctrl->pkg_con == M_SUCCESS)
-    result = func(_vctrl, pkg, ud);
+  if (ftell(_vctrl->file) != 0L)
+    rewind(_vctrl->file);
+  while (fgets(_vctrl->line, sizeof(_vctrl->line), _vctrl->file))
+    result = func(_vctrl, pkg);
   return result;
 }

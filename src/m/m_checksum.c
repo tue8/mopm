@@ -39,36 +39,25 @@ char *get_checksum(const char *filename)
   return hex_sha256sum;
 }
 
-struct checksum_data
-{
-  char *bin_dir;
-  const char *checksum;
-};
-
-static int condition(struct vctrl *_vctrl, char *pkg, void *ud)
-{
-  char *pkg_n;
-  struct checksum_data *cd = ud;
-  int result = M_FAIL;
-  asprintf(&pkg_n, "%s\n", pkg);
-  if (strcmp(_vctrl->line, pkg) == 0 || strcmp(_vctrl->line, pkg_n) == 0)
-  {
-    char *bin_checksum = get_checksum(cd->bin_dir);
-    result = (bin_checksum != NULL &&
-              strcmp(bin_checksum, cd->checksum) == 0) ? M_SUCCESS : M_FAIL;
-    m_free(bin_checksum);
-    _vctrl->pkg_con = M_FAIL;
-  }
-  m_free(pkg_n);
-  return result;
-}
-
 int verify_checksum(struct vctrl *_vctrl, char *bin_dir, char *pkg,
                     const char *checksum)
 {
-  char line[133];
-  struct checksum_data cd;
-  cd.bin_dir = bin_dir;
-  cd.checksum = checksum;
-  return vctrl_pkg_con(_vctrl, pkg, &cd, &condition);
+  int result = M_FAIL;
+  if (ftell(_vctrl->file) != 0L)
+    rewind(_vctrl->file);
+  while (fgets(_vctrl->line, sizeof(_vctrl->line), _vctrl->file))
+  {
+    char* pkg_n;
+    asprintf(&pkg_n, "%s\n", pkg);
+    if (strcmp(_vctrl->line, pkg) == 0 || strcmp(_vctrl->line, pkg_n) == 0)
+    {
+      char* bin_checksum = get_checksum(bin_dir);
+      result = (bin_checksum != NULL &&
+                strcmp(bin_checksum, checksum) == 0) ? M_SUCCESS : M_FAIL;
+      m_free(bin_checksum);
+      break;
+    }
+    m_free(pkg_n);
+  }
+  return result;
 }

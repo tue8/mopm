@@ -28,7 +28,7 @@ static int print_package_info(struct mo_program *mo)
 }
 
 
-static int vctrl_clone(struct vctrl *_vctrl, char *pkg, void *ud)
+static int vctrl_clone(struct vctrl *_vctrl, char *pkg)
 {
 /*
 * if all pkg vctrls are valid        -> pkg_valid -> true
@@ -63,7 +63,7 @@ static int vctrl_clone(struct vctrl *_vctrl, char *pkg, void *ud)
 */
 static int m_vctrl_add_pkg(struct vctrl *_vctrl, char *pkg)
 {
-  if (vctrl_pkg_con(_vctrl, pkg, NULL, &vctrl_clone) == M_FAIL)
+  if (vctrl_loop_over(_vctrl, pkg, &vctrl_clone) == M_FAIL)
     return M_FAIL;
 
   if (file_size(_vctrl->fclone) == 0)
@@ -103,6 +103,52 @@ static void cleanup(struct mo_program *mo, int code)
   exit(code);
 }
 
+static int yes_no_prompt()
+{
+  char r = getchar();
+
+  switch (r)
+  {
+  case 'Y':
+  case 'y':
+    return M_SUCCESS;
+  case 'N':
+  case 'n':
+    return M_FAIL;
+  default:
+    printf("Invalid input, enter again (y/n): ");
+    return yes_no_prompt();
+  }
+
+  return M_FAIL;
+}
+
+static int check_version_vctrl(struct mo_program* mo, const char* newest_version)
+{
+  int res = M_SUCCESS;
+
+  if (ftell(mo->_vctrl.file) != 0L)
+    rewind(mo->_vctrl.file);
+
+  while (fgets(mo->_vctrl.line, sizeof(mo->_vctrl.line), mo->_vctrl.file))
+  {
+    char* pkg_name = get_str_before_char(mo->_vctrl.line, '@');
+    char* pkg_version = get_str_after_char(mo->_vctrl.line, '@');
+    if (strcmp(pkg_name, mo->pkg_name) == 0 &&
+      mo->pkg_version == NULL &&
+      strcmp(pkg_version, newest_version) != 0)
+    {
+      printf("New version available. Do you want to update? (y/n): ");
+      res = yes_no_prompt();
+    }
+
+    m_free(pkg_name);
+    m_free(pkg_version);
+  }
+
+  return res;
+}
+
 int main(int argc, char *argv[])
 {
   struct mo_program mo;
@@ -127,14 +173,19 @@ int main(int argc, char *argv[])
   asprintf(&mo.pkg_dir, "%s\\mopm\\%s", getenv("APPDATA"), mo.pkg_name);
   asprintf(&mo.bin_dir, "%s\\%s.zip", mo.pkg_dir, mo.pkg_name);
 
-
-
   /* retrieve info */
   if (m_find_package(&mo) == M_FAIL)
     cleanup(&mo, M_FAIL);
 
   if (mo.pkg_version == NULL)
   {
+    /* ask user for updates */
+    if (check_version_vctrl(&mo, mo.fpd.version) == M_FAIL)
+    {
+      fprintf(stderr, "Installation cancelled.\n");
+      cleanup(&mo, M_FAIL);
+    }
+
     mo.pkg_version = m_strdup(mo.fpd.version);
     m_free(mo.pkg);
     asprintf(&(mo.pkg), "%s@%s", mo.pkg_name, mo.pkg_version);
@@ -142,12 +193,12 @@ int main(int argc, char *argv[])
   
   create_directory(mo.pkg_dir);
   
+
   if (m_validate_package(&mo) == M_FAIL)
     cleanup(&mo, M_FAIL);
   
   print_package_info(&mo);
   
-
   /* download */
   printf("Downloading package...\n");
   M_ASSERT(download_to_file(&mo) != CURLE_OK &&
