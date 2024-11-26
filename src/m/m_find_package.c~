@@ -18,7 +18,7 @@
 #define FP_NOT_FOUND_ERR 1
 #define FP_MANIFEST_ERR 2
 
-const char *manifest_origin_url = "https://server.cyberpho.be/get-package?package=%s";
+const char *manifest_origin_url = "https://server.cyberpho.be/mopm-packages/%s.json";
 
 
 
