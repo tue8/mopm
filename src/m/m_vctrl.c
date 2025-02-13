@@ -36,9 +36,12 @@ int vctrl_init(struct vctrl *_vctrl)
 
   if ((_vctrl->file = fopen(_vctrl->dir, "r")) == NULL)
   {
-    perror("Could not open .vctrl");
-    result = M_FAIL;
-    goto out;
+    if ((_vctrl->file = fopen(_vctrl->dir, "w")) == NULL)
+    {
+      perror("Could not create .vctrl");
+      result = M_FAIL;
+      goto out;
+    }
   }
 
   _vctrl->fclone = fopen(_vctrl->dirclone, "w+");
